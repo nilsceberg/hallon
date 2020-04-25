@@ -60,17 +60,15 @@ impl Renderer<'_> {
         for [a, b, c] in &mesh.triangles {
             let matrix = self.projection_matrix.mat_mul(&self.camera.view_matrix());
 
-            // View space
-            let vsa = to_screen_space(&matrix, a);
-            let vsb = to_screen_space(&matrix, b);
-            let vsc = to_screen_space(&matrix, c);
+            let a = to_screen_space(&matrix, a);
+            let b = to_screen_space(&matrix, b);
+            let c = to_screen_space(&matrix, c);
 
-            // Screen space (ie view space without z and w)
-            let ssa = Vec2::new(vsa.x, vsa.y);
-            let ssb = Vec2::new(vsb.x, vsb.y);
-            let ssc = Vec2::new(vsc.x, vsc.y);
+            let a = Vec2::new(a.x, a.y);
+            let b = Vec2::new(b.x, b.y);
+            let c = Vec2::new(c.x, c.y);
 
-            rasterizer::triangle(self.target, fragment, &ssa, &ssb, &ssc);
+            rasterizer::triangle(self.target, fragment, &a, &b, &c);
         }
     }
 }
