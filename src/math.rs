@@ -16,6 +16,32 @@ impl Mat4x4 {
             m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] * v.w,
         )
     }
+
+    pub fn mat_mul(&self, b: &Mat4x4) -> Mat4x4 {
+        fn e(a: [f32; 4], b: [f32; 4]) -> f32 {
+            a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
+        }
+
+        let &Mat4x4(a) = self;
+        let Mat4x4(b) = b.transpose();
+
+        Mat4x4([
+            [e(a[0], b[0]), e(a[0], b[1]), e(a[0], b[2]), e(a[0], b[3])],
+            [e(a[1], b[0]), e(a[1], b[1]), e(a[1], b[2]), e(a[1], b[3])],
+            [e(a[2], b[0]), e(a[2], b[1]), e(a[2], b[2]), e(a[2], b[3])],
+            [e(a[3], b[0]), e(a[3], b[1]), e(a[3], b[2]), e(a[3], b[3])],
+        ])
+    }
+
+    pub fn transpose(&self) -> Mat4x4 {
+        let &Mat4x4(a) = self;
+        Mat4x4([
+            [a[0][0], a[1][0], a[2][0], a[3][0]],
+            [a[0][1], a[1][1], a[2][1], a[3][1]],
+            [a[0][2], a[1][2], a[2][2], a[3][2]],
+            [a[0][3], a[1][3], a[2][3], a[3][3]],
+        ])
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -48,6 +74,28 @@ impl Vec2 {
 impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
         Vec3 { x: x, y: y, z: z }
+    }
+
+    pub fn mul(&self, f: f32) -> Vec3 {
+        Vec3::new(self.x * f, self.y * f, self.z * f)
+    }
+
+    pub fn translation(&self) -> Mat4x4 {
+        Mat4x4([
+            [1.0, 0.0, 0.0, self.x],
+            [0.0, 1.0, 0.0, self.y],
+            [0.0, 0.0, 1.0, self.z],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
+    }
+
+    pub fn scaling(&self) -> Mat4x4 {
+        Mat4x4([
+            [self.x, 0.0, 0.0, 0.0],
+            [0.0, self.y, 0.0, 0.0],
+            [0.0, 0.0, self.z, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
     }
 }
 

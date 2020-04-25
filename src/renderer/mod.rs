@@ -1,3 +1,4 @@
+use super::camera::*;
 use super::geometry::*;
 use super::math::*;
 use super::rasterizer;
@@ -7,7 +8,7 @@ use super::shaders::*;
 pub struct Renderer<'a> {
     pub target: &'a mut RenderTarget,
     projection_matrix: Mat4x4,
-    pub camera_position: Vec4,
+    camera: &'a Camera,
 }
 
 fn view_matrix(fov: f32, aspect: f32, near: f32, far: f32) -> Mat4x4 {
@@ -18,7 +19,7 @@ fn view_matrix(fov: f32, aspect: f32, near: f32, far: f32) -> Mat4x4 {
     Mat4x4([
         [u * a, 0.0, 0.0, 0.0],
         [0.0, u, 0.0, 0.0],
-        [0.0, 0.0, d, d * near],
+        [0.0, 0.0, d, -d * near],
         [0.0, 0.0, 1.0, 0.0],
     ])
 }
@@ -26,7 +27,17 @@ fn view_matrix(fov: f32, aspect: f32, near: f32, far: f32) -> Mat4x4 {
 fn to_screen_space(matrix: &Mat4x4, point: &Vec3) -> Vec3 {
     let mut point = Vec4::new(point.x, point.y, point.z, 1.0);
     point = matrix.mul(&point);
-    Vec3::new(point.x / point.w, point.y / point.w, point.z)
+
+    if point.z > 0.0 {
+        Vec3::new(point.x / point.w, point.y / point.w, point.z)
+    } else {
+        // If Z is negative, the coordinate is behind the near clipping plane,
+        // so don't divide by depth (as this could result in a division by zero for points
+        // that are exactly on the camera's Z coordinate!).
+        // This should be handled in a better way, but for now, let's just return
+        // a dummy coordinate (which should make it obvious visually).
+        Vec3::new(0.0, 0.0, 0.0)
+    }
 }
 
 impl Renderer<'_> {
@@ -36,37 +47,23 @@ impl Renderer<'_> {
         near: f32,
         far: f32,
         target: &'a mut RenderTarget,
-        camera_position: &Vec4,
+        camera: &'a Camera,
     ) -> Renderer<'a> {
         Renderer {
             target: target,
-            camera_position: *camera_position,
+            camera: camera,
             projection_matrix: view_matrix(fov, aspect, near, far),
         }
     }
 
     pub fn draw<'b>(&'b mut self, mesh: &Mesh, fragment: &dyn FragmentShader) {
         for [a, b, c] in &mesh.triangles {
-            // Camera space
-            let mut csa = *a;
-            csa.x -= self.camera_position.x;
-            csa.y -= self.camera_position.y;
-            csa.z -= self.camera_position.z;
-
-            let mut csb = *b;
-            csb.x -= self.camera_position.x;
-            csb.y -= self.camera_position.y;
-            csb.z -= self.camera_position.z;
-
-            let mut csc = *c;
-            csc.x -= self.camera_position.x;
-            csc.y -= self.camera_position.y;
-            csc.z -= self.camera_position.z;
+            let matrix = self.projection_matrix.mat_mul(&self.camera.view_matrix());
 
             // View space
-            let vsa = to_screen_space(&self.projection_matrix, &csa);
-            let vsb = to_screen_space(&self.projection_matrix, &csb);
-            let vsc = to_screen_space(&self.projection_matrix, &csc);
+            let vsa = to_screen_space(&matrix, a);
+            let vsb = to_screen_space(&matrix, b);
+            let vsc = to_screen_space(&matrix, c);
 
             // Screen space (ie view space without z and w)
             let ssa = Vec2::new(vsa.x, vsa.y);
