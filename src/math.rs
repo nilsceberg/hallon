@@ -16,6 +16,15 @@ pub struct Vec4 {
 	pub w: f32,
 }
 
+impl Vec2 {
+	pub fn new(x: f32, y: f32) -> Vec2 {
+		Vec2 {
+			x: x,
+			y: y,
+		}
+	}
+}
+
 impl Vec4 {
 	pub fn new(x: f32, y: f32, z: f32, w: f32) -> Vec4 {
 		Vec4 {
