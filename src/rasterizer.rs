@@ -15,11 +15,11 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Ve
     let width = rt.width as f32 - 1.0;
     let height = rt.height as f32 - 1.0;
 
-    let x1 = (a.x * width).round() as i32;
-    let y1 = ((1.0 - a.y) * height).round() as i32;
+    let x1 = ((a.x + 1.0) * 0.5 * width).round() as i32;
+    let y1 = ((1.0 - (a.y + 1.0) * 0.5) * height).round() as i32;
 
-    let x2 = (b.x * width).round() as i32;
-    let y2 = ((1.0 - b.y) * height).round() as i32;
+    let x2 = ((b.x + 1.0) * 0.5 * width).round() as i32;
+    let y2 = ((1.0 - (b.y + 1.0) * 0.5) * height).round() as i32;
 
     pixel(rt, shader, x1, y1);
 
