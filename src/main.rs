@@ -111,11 +111,10 @@ fn render(dd: &dyn display_device::DisplayDevice, meshes: &Vec<geometry::Mesh>, 
             camera_position: camera,
         };
 
-        // let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
-        let green_shader = shaders::SolidShader(Vec4::new(0.0, 1.0, 0.0, 1.0));
-
+        let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
+        let shader = shaders::SolidShader(white);
         for mesh in meshes {
-            renderer.draw(mesh, &green_shader);
+            renderer.draw(mesh, &shader);
         }
     }
 
