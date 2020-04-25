@@ -102,14 +102,14 @@ fn render(dd: &dyn display_device::DisplayDevice, meshes: &Vec<geometry::Mesh>, 
     let mut rt = render_target::RenderTarget::new(dd.dimensions().unwrap_or((10, 10)));
 
     {
-        let mut renderer = renderer::Renderer {
-            aspect: rt.aspect_ratio(),
-            target: &mut rt,
-            fov: std::f32::consts::PI / 4.0,
-            near: 0.1,
-            far: 100.0,
-            camera_position: camera,
-        };
+        let mut renderer = renderer::Renderer::new(
+            std::f32::consts::PI / 4.0,
+            rt.aspect_ratio(),
+            0.1,
+            100.0,
+            &mut rt,
+            &camera,
+        );
 
         let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
         let shader = shaders::SolidShader(white);
