@@ -6,7 +6,7 @@ use super::shaders::*;
 
 pub struct Renderer<'a> {
     pub target: &'a mut RenderTarget,
-    view_matrix: Mat4x4,
+    projection_matrix: Mat4x4,
     pub camera_position: Vec4,
 }
 
@@ -23,13 +23,10 @@ fn view_matrix(fov: f32, aspect: f32, near: f32, far: f32) -> Mat4x4 {
     ])
 }
 
-fn to_view_space(matrix: &Mat4x4, point: &Vec4) -> Vec4 {
-    let mut point = *point;
-    point.w = 1.0;
+fn to_screen_space(matrix: &Mat4x4, point: &Vec3) -> Vec3 {
+    let mut point = Vec4::new(point.x, point.y, point.z, 1.0);
     point = matrix.mul(&point);
-    point.x /= point.w;
-    point.y /= point.w;
-    point
+    Vec3::new(point.x / point.w, point.y / point.w, point.z)
 }
 
 impl Renderer<'_> {
@@ -44,7 +41,7 @@ impl Renderer<'_> {
         Renderer {
             target: target,
             camera_position: *camera_position,
-            view_matrix: view_matrix(fov, aspect, near, far),
+            projection_matrix: view_matrix(fov, aspect, near, far),
         }
     }
 
@@ -67,9 +64,9 @@ impl Renderer<'_> {
             csc.z -= self.camera_position.z;
 
             // View space
-            let vsa = to_view_space(&self.view_matrix, &csa);
-            let vsb = to_view_space(&self.view_matrix, &csb);
-            let vsc = to_view_space(&self.view_matrix, &csc);
+            let vsa = to_screen_space(&self.projection_matrix, &csa);
+            let vsb = to_screen_space(&self.projection_matrix, &csb);
+            let vsc = to_screen_space(&self.projection_matrix, &csc);
 
             // Screen space (ie view space without z and w)
             let ssa = Vec2::new(vsa.x, vsa.y);
