@@ -11,7 +11,7 @@ pub struct Renderer<'a> {
     camera: &'a Camera,
 }
 
-fn view_matrix(fov: f32, aspect: f32, near: f32, far: f32) -> Mat4x4 {
+fn projection_matrix(fov: f32, aspect: f32, near: f32, far: f32) -> Mat4x4 {
     let u = 1.0 / fov.tan();
     let a = 1.0 / aspect;
     let d = 1.0 / (far - near);
@@ -52,7 +52,7 @@ impl Renderer<'_> {
         Renderer {
             target: target,
             camera: camera,
-            projection_matrix: view_matrix(fov, aspect, near, far),
+            projection_matrix: projection_matrix(fov, aspect, near, far),
         }
     }
 
