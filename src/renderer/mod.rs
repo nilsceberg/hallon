@@ -56,9 +56,11 @@ impl Renderer<'_> {
         }
     }
 
-    pub fn draw<'b>(&'b mut self, mesh: &Mesh, fragment: &dyn FragmentShader) {
+    pub fn draw<'b>(&'b mut self, mesh: &Mesh, transform: &Mat4x4, fragment: &dyn FragmentShader) {
         for [a, b, c] in &mesh.triangles {
-            let matrix = self.projection_matrix.mat_mul(&self.camera.view_matrix());
+            let matrix = self
+                .projection_matrix
+                .mat_mul(&self.camera.view_matrix().mat_mul(transform));
 
             let a = to_screen_space(&matrix, a);
             let b = to_screen_space(&matrix, b);

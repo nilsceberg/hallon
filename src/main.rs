@@ -2,6 +2,7 @@ mod camera;
 mod display_device;
 mod geometry;
 mod math;
+mod object;
 mod rasterizer;
 mod render_target;
 mod renderer;
@@ -12,9 +13,7 @@ use math::*;
 fn main() {
     let dd = display_device::ConsoleDisplay { rgb: true };
 
-    let mut meshes: Vec<geometry::Mesh> = vec![];
-
-    meshes.push(geometry::Mesh {
+    let cube_mesh = geometry::Mesh {
         triangles: vec![
             // Front
             [
@@ -83,7 +82,9 @@ fn main() {
                 Vec3::new(-1.0, -1.0, -1.0),
             ],
         ],
-    });
+    };
+
+    let mut objects: Vec<object::Object> = vec![object::Object::new(&cube_mesh)];
 
     let time_step = 0.1;
     let mut t: f32 = 0.0;
@@ -92,9 +93,12 @@ fn main() {
     };
 
     loop {
-        render(&dd, &meshes, &camera);
+        render(&dd, &objects, &camera);
 
         camera.translation.x = t.sin() * 2.0;
+        objects[0].scale.y = 1.5 + (t * 4.0 + 3.1415 * 0.5).sin() * 0.5;
+        objects[0].scale.x = 1.0 - (t * 4.0 + 3.1415 * 0.5).sin() * 0.2;
+        objects[0].scale.z = 1.0 - (t * 4.0 + 3.1415 * 0.5).sin() * 0.2;
 
         std::thread::sleep(std::time::Duration::from_millis(
             (time_step * 1000.0) as u64,
@@ -106,7 +110,7 @@ fn main() {
 
 fn render(
     dd: &dyn display_device::DisplayDevice,
-    meshes: &Vec<geometry::Mesh>,
+    objects: &Vec<object::Object>,
     camera: &camera::Camera,
 ) {
     let mut rt = render_target::RenderTarget::new(dd.dimensions().unwrap_or((10, 10)));
@@ -123,8 +127,8 @@ fn render(
 
         let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
         let shader = shaders::SolidShader(white);
-        for mesh in meshes {
-            renderer.draw(mesh, &shader);
+        for object in objects {
+            renderer.draw(object.mesh, &object.transform(), &shader);
         }
     }
 
