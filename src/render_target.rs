@@ -30,4 +30,8 @@ impl RenderTarget {
     pub fn get_pixel(&self, x: usize, y: usize) -> Vec4 {
         self.pixels[y * self.width + x]
     }
+
+    pub fn aspect_ratio(&self) -> f32 {
+        (self.width as f32) / (self.height as f32)
+    }
 }

@@ -2,12 +2,18 @@ use super::math::*;
 use super::render_target::RenderTarget;
 use super::shaders::*;
 
+pub fn triangle(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2, c: &Vec2) {
+    line(rt, shader, a, b);
+    line(rt, shader, b, c);
+    line(rt, shader, c, a);
+}
+
 pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2) {
     /* Bresenham's algorithm? */
 
     /* Naive: */
-    let width = rt.width as f32;
-    let height = rt.height as f32;
+    let width = rt.width as f32 - 1.0;
+    let height = rt.height as f32 - 1.0;
 
     let x1 = (a.x * width).round() as i32;
     let y1 = ((1.0 - a.y) * height).round() as i32;
