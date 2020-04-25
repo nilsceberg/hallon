@@ -21,9 +21,9 @@ impl DisplayDevice for ConsoleDisplay {
                 if self.rgb {
                     print!(
                         "\x1b[48;2;{};{};{}m  ",
-                        (pixel.x * 255.0).round(),
-                        (pixel.y * 255.0).round(),
-                        (pixel.z * 255.0).round(),
+                        (pixel.x * 255.0).round() as u8,
+                        (pixel.y * 255.0).round() as u8,
+                        (pixel.z * 255.0).round() as u8,
                     );
                 } else {
                     if pixel.length() > threshold {
