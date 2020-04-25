@@ -10,6 +10,7 @@ pub struct Renderer<'a> {
     pub aspect: f32,
     pub near: f32,
     pub far: f32,
+    pub camera_position: Vec4,
 }
 
 fn to_view_space(fov: f32, aspect: f32, near: f32, far: f32, point: &Vec4) -> Vec4 {
@@ -25,16 +26,21 @@ fn to_view_space(fov: f32, aspect: f32, near: f32, far: f32, point: &Vec4) -> Ve
 impl Renderer<'_> {
     pub fn draw<'b>(&'b mut self, mesh: &Mesh, fragment: &dyn FragmentShader) {
         for [a, b, c] in &mesh.triangles {
-            let camera_z = -3.0;
             // Camera space
             let mut csa = *a;
-            csa.z -= camera_z;
+            csa.x -= self.camera_position.x;
+            csa.y -= self.camera_position.y;
+            csa.z -= self.camera_position.z;
 
             let mut csb = *b;
-            csb.z -= camera_z;
+            csb.x -= self.camera_position.x;
+            csb.y -= self.camera_position.y;
+            csb.z -= self.camera_position.z;
 
             let mut csc = *c;
-            csc.z -= camera_z;
+            csc.x -= self.camera_position.x;
+            csc.y -= self.camera_position.y;
+            csc.z -= self.camera_position.z;
 
             // View space
             let vsa = to_view_space(self.fov, self.aspect, self.near, self.far, &csa);

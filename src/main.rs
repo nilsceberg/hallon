@@ -84,13 +84,21 @@ fn main() {
         ],
     });
 
+    let time_step = 0.1;
+    let mut t: f32 = 0.0;
+    let mut camera = Vec4::new(0.0, 0.0, -3.0, 1.0);
+
     loop {
-        render(&dd, &meshes);
-        std::thread::sleep(std::time::Duration::from_millis(500));
+        render(&dd, &meshes, camera);
+        camera.x = t.sin() * 2.0;
+        std::thread::sleep(std::time::Duration::from_millis(
+            (time_step * 1000.0) as u64,
+        ));
+        t += time_step;
     }
 }
 
-fn render(dd: &dyn display_device::DisplayDevice, meshes: &Vec<geometry::Mesh>) {
+fn render(dd: &dyn display_device::DisplayDevice, meshes: &Vec<geometry::Mesh>, camera: Vec4) {
     let mut rt = render_target::RenderTarget::new(dd.dimensions().unwrap_or((10, 10)));
 
     {
@@ -100,6 +108,7 @@ fn render(dd: &dyn display_device::DisplayDevice, meshes: &Vec<geometry::Mesh>) 
             fov: std::f32::consts::PI / 4.0,
             near: 0.1,
             far: 100.0,
+            camera_position: camera,
         };
 
         // let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
