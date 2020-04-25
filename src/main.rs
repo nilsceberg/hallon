@@ -26,9 +26,15 @@ fn main() {
     let green_shader = shaders::SolidShader(Vec4::new(0.0, 1.0, 0.0, 1.0));
     rasterizer::line(
         &mut rt,
-        &green_shader,
+        &shaders::RainbowShader,
         &Vec2::new(0.1, 0.2),
         &Vec2::new(0.3, 0.7),
+    );
+    rasterizer::line(
+        &mut rt,
+        &green_shader,
+        &Vec2::new(0.1, 0.8),
+        &Vec2::new(0.8, 0.3),
     );
     rasterizer::line(
         &mut rt,
@@ -38,15 +44,9 @@ fn main() {
     );
     rasterizer::line(
         &mut rt,
-        &green_shader,
+        &shaders::RainbowShader,
         &Vec2::new(0.0, 1.0),
         &Vec2::new(1.0, 0.0),
-    );
-    rasterizer::line(
-        &mut rt,
-        &green_shader,
-        &Vec2::new(0.1, 0.8),
-        &Vec2::new(0.8, 0.3),
     );
 
     dd.show(&rt);
