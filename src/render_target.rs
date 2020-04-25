@@ -7,7 +7,7 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(width: usize, height: usize) -> RenderTarget {
+    pub fn new((width, height): (usize, usize)) -> RenderTarget {
         RenderTarget {
             width: width,
             height: height,

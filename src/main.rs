@@ -4,12 +4,19 @@ mod rasterizer;
 mod render_target;
 mod shaders;
 
-use display_device::DisplayDevice;
 use math::*;
 
 fn main() {
-    let mut rt = render_target::RenderTarget::new(30, 20);
     let dd = display_device::ConsoleDisplay { rgb: true };
+
+    loop {
+        render(&dd);
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
+}
+
+fn render(dd: &dyn display_device::DisplayDevice) {
+    let mut rt = render_target::RenderTarget::new(dd.dimensions().unwrap_or((10, 10)));
 
     let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
 

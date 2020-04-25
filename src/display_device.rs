@@ -2,6 +2,9 @@ use super::math::*;
 
 pub trait DisplayDevice {
     fn show(&self, rt: &super::render_target::RenderTarget);
+    fn dimensions(&self) -> Option<(usize, usize)> {
+        None
+    }
 }
 
 pub struct ConsoleDisplay {
@@ -30,7 +33,14 @@ impl DisplayDevice for ConsoleDisplay {
                     }
                 }
             }
-            println!("\x1b[0m");
+
+            if y != rt.height - 1 {
+                println!("\x1b[0m");
+            }
         }
+    }
+
+    fn dimensions(&self) -> Option<(usize, usize)> {
+        term_size::dimensions().map(|(w, h)| (w / 2, h))
     }
 }
