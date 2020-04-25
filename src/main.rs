@@ -7,10 +7,10 @@ use display_device::DisplayDevice;
 
 fn main() {
 	let mut rt = render_target::RenderTarget::new(40, 30);
-	let dd = display_device::ConsoleDisplay;
+	let dd = display_device::ConsoleDisplay { rgb: true };
 
-	rt.set_pixel(5, 5, &Vec4::new(1.0, 1.0, 1.0, 1.0));
-	rt.set_pixel(2, 4, &Vec4::new(1.0, 1.0, 1.0, 1.0));
+	rt.set_pixel(5, 5, &Vec4::new(1.0, 0.0, 0.0, 1.0));
+	rt.set_pixel(2, 4, &Vec4::new(0.0, 0.5, 0.0, 1.0));
 
 	let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
 
