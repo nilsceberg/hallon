@@ -20,8 +20,10 @@ impl<'a> Object<'a> {
     }
 
     pub fn transform(&self) -> Mat4x4 {
+        // We scale first, then rotate, and finally translate
         self.translation
             .translation()
+            .mat_mul(&self.rotation.rotation())
             .mat_mul(&self.scale.scaling())
     }
 }

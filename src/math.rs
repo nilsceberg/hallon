@@ -97,6 +97,32 @@ impl Vec3 {
             [0.0, 0.0, 0.0, 1.0],
         ])
     }
+
+    pub fn rotation(&self) -> Mat4x4 {
+        // X axis
+        let x = Mat4x4([
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, self.x.cos(), -self.x.sin(), 0.0],
+            [0.0, self.x.sin(), self.x.cos(), 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
+        // Y axis
+        let y = Mat4x4([
+            [self.y.cos(), 0.0, -self.y.sin(), 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [self.y.sin(), 0.0, self.y.cos(), 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
+        // Z axis
+        let z = Mat4x4([
+            [self.z.cos(), -self.z.sin(), 0.0, 0.0],
+            [self.z.sin(), self.z.cos(), 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
+        // Apply z first, then x, last y
+        y.mat_mul(&x).mat_mul(&z)
+    }
 }
 
 impl Vec4 {
