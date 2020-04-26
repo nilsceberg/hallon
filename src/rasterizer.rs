@@ -24,10 +24,74 @@ pub fn from_normalized((width, height): (usize, usize), point: &Vec2) -> (i32, i
     )
 }
 
-pub fn triangle(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2, c: &Vec2) {
-    line(rt, shader, a, b);
-    line(rt, shader, b, c);
-    line(rt, shader, c, a);
+pub fn triangle(
+    rt: &mut RenderTarget,
+    shader: &dyn FragmentShader,
+    a: &Vec2,
+    b: &Vec2,
+    c: &Vec2,
+    wireframe: bool,
+) {
+    if wireframe {
+        line(rt, shader, a, b);
+        line(rt, shader, b, c);
+        line(rt, shader, c, a);
+    } else {
+        triangle_parallel(rt, shader, a, b, c);
+    }
+}
+
+// A method that works great in parallell (read: on hardware)
+// but perhaps isn't great for CPUs. We check every pixel
+// (as an optimization, only those in a rectangle that just covers the triangle),
+// and check whether they are inside the triangle using cross products.
+
+fn triangle_parallel(
+    rt: &mut RenderTarget,
+    shader: &dyn FragmentShader,
+    a: &Vec2,
+    b: &Vec2,
+    c: &Vec2,
+) {
+    let (x0, y0) = from_normalized(rt.dimensions(), a);
+    let (x1, y1) = from_normalized(rt.dimensions(), b);
+    let (x2, y2) = from_normalized(rt.dimensions(), c);
+
+    let left = x0.min(x1).min(x2);
+    let right = x0.max(x1).max(x2);
+    let top = y0.min(y1).min(y2);
+    let bottom = y0.max(y1).max(y2);
+
+    for x in left..(right + 1) {
+        for y in top..(bottom + 1) {
+            if right_side((x0, y0), (x1, y1), (x, y))
+                && right_side((x1, y1), (x2, y2), (x, y))
+                && right_side((x2, y2), (x0, y0), (x, y))
+            {
+                pixel(rt, shader, x, y);
+            }
+        }
+    }
+
+    let black = super::shaders::SolidShader(Vec4::new(0.0, 0.0, 0.0, 1.0));
+    line(rt, &black, a, b);
+    line(rt, &black, b, c);
+    line(rt, &black, c, a);
+}
+
+fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) -> bool {
+    // Calculate AB and AP
+    let abx = bx - ax;
+    let aby = by - ay;
+
+    let apx = px - ax;
+    let apy = py - ay;
+
+    // Calculate z of cross product
+    let z = abx * apy - aby * apx;
+
+    // Change to less-than for front-face culling
+    z > 0
 }
 
 pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2) {

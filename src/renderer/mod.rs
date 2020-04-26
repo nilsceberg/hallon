@@ -70,7 +70,7 @@ impl Renderer<'_> {
             let b = Vec2::new(b.x, b.y);
             let c = Vec2::new(c.x, c.y);
 
-            rasterizer::triangle(self.target, fragment, &a, &b, &c);
+            rasterizer::triangle(self.target, fragment, &a, &b, &c, false);
         }
     }
 }
