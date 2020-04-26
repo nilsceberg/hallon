@@ -125,7 +125,9 @@ fn main() {
 
         dd.prepare();
         rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
+
         render(&mut rt, &objects, &camera);
+
         dd.show(&rt);
 
         std::thread::sleep(std::time::Duration::from_millis(

@@ -40,4 +40,8 @@ impl RenderTarget {
     pub fn aspect_ratio(&self) -> f32 {
         (self.width as f32) / (self.height as f32)
     }
+
+    pub fn dimensions(&self) -> (usize, usize) {
+        (self.width, self.height)
+    }
 }

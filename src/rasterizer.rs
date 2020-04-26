@@ -2,6 +2,28 @@ use super::math::*;
 use super::render_target::RenderTarget;
 use super::shaders::*;
 
+pub fn map((a0, b0): (f32, f32), (a1, b1): (f32, f32), x: f32) -> f32 {
+    (x - a0) / (b0 - a0) * (b1 - a1) + a1
+}
+
+pub fn approximate_pixel(size: usize, normalized: f32) -> i32 {
+    let size = size as f32;
+    let center_offset = 1.0 / size;
+    let floating = map(
+        (-1.0, 1.0),
+        (center_offset, size - center_offset),
+        normalized,
+    );
+    (floating - 0.5).round() as i32
+}
+
+pub fn from_normalized((width, height): (usize, usize), point: &Vec2) -> (i32, i32) {
+    (
+        approximate_pixel(width, point.x),
+        approximate_pixel(height, -point.y),
+    )
+}
+
 pub fn triangle(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2, c: &Vec2) {
     line(rt, shader, a, b);
     line(rt, shader, b, c);
@@ -9,17 +31,9 @@ pub fn triangle(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b:
 }
 
 pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2) {
-    /* Bresenham's algorithm? */
-
     /* Naive: */
-    let width = (rt.width as f32) - 1.0;
-    let height = (rt.height as f32) - 1.0;
-
-    let x1 = ((a.x + 1.0) * 0.5 * width).round() as i32;
-    let y1 = ((1.0 - (a.y + 1.0) * 0.5) * height).round() as i32;
-
-    let x2 = ((b.x + 1.0) * 0.5 * width).round() as i32;
-    let y2 = ((1.0 - (b.y + 1.0) * 0.5) * height).round() as i32;
+    let (x1, y1) = from_normalized(rt.dimensions(), a);
+    let (x2, y2) = from_normalized(rt.dimensions(), b);
 
     pixel(rt, shader, x1, y1);
 
