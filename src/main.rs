@@ -124,6 +124,7 @@ fn main() {
         objects[0].rotation.y = t;
 
         dd.prepare();
+        rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
         render(&mut rt, &objects, &camera);
         dd.show(&rt);
 

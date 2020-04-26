@@ -23,6 +23,12 @@ impl RenderTarget {
         }
     }
 
+    pub fn clear(&mut self, color: &Vec4) {
+        for pixel in &mut self.pixels {
+            *pixel = *color;
+        }
+    }
+
     pub fn set_pixel(&mut self, x: usize, y: usize, color: &Vec4) {
         self.pixels[y * self.width + x] = *color;
     }
