@@ -5,6 +5,14 @@ pub trait VecN {
 #[derive(Debug, Copy, Clone)]
 pub struct Mat4x4(pub [[f32; 4]; 4]);
 
+pub fn map((a0, b0): (f32, f32), (a1, b1): (f32, f32), x: f32) -> f32 {
+    (x - a0) / (b0 - a0) * (b1 - a1) + a1
+}
+
+pub fn clamp((a, b): (f32, f32), x: f32) -> f32 {
+    x.max(a).min(b)
+}
+
 impl Mat4x4 {
     pub fn mul(&self, vector: &Vec4) -> Vec4 {
         let &Mat4x4(m) = self;

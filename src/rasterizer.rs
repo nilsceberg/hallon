@@ -2,11 +2,7 @@ use super::math::*;
 use super::render_target::RenderTarget;
 use super::shaders::*;
 
-pub fn map((a0, b0): (f32, f32), (a1, b1): (f32, f32), x: f32) -> f32 {
-    (x - a0) / (b0 - a0) * (b1 - a1) + a1
-}
-
-pub fn approximate_pixel(size: usize, normalized: f32) -> i32 {
+fn approximate_pixel(size: usize, normalized: f32) -> i32 {
     let size = size as f32;
     let center_offset = 1.0 / (2.0 * size);
     let floating = map(
@@ -21,6 +17,13 @@ pub fn from_normalized((width, height): (usize, usize), point: &Vec2) -> (i32, i
     (
         approximate_pixel(width, point.x),
         approximate_pixel(height, -point.y),
+    )
+}
+
+pub fn to_normalized((width, height): (usize, usize), (x, y): (i32, i32)) -> Vec2 {
+    Vec2::new(
+        map((0.0, width as f32 - 1.0), (-1.0, 1.0), x as f32),
+        -map((0.0, height as f32 - 1.0), (-1.0, 1.0), y as f32),
     )
 }
 
@@ -136,6 +139,7 @@ fn pixel(rt: &mut RenderTarget, shader: &dyn FragmentShader, x: i32, y: i32) -> 
                 0.0,
                 1.0,
             ),
+            screen_uv: to_normalized(rt.dimensions(), (x, y)),
         };
 
         let color = shader.fragment_color(&input);

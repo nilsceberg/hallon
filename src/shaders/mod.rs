@@ -5,6 +5,7 @@ use rand::prelude::*;
 
 pub struct FragmentInput<'a> {
     pub position: &'a Vec4,
+    pub screen_uv: Vec2,
 }
 
 pub trait FragmentShader {
@@ -16,6 +17,13 @@ impl FragmentShader for SolidShader {
     fn fragment_color(&self, _input: &FragmentInput) -> Vec4 {
         let &SolidShader(color) = self;
         color
+    }
+}
+
+pub struct ScreenUVShader;
+impl FragmentShader for ScreenUVShader {
+    fn fragment_color(&self, input: &FragmentInput) -> Vec4 {
+        Vec4::new(input.screen_uv.x, input.screen_uv.y, 0.0, 1.0)
     }
 }
 

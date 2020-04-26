@@ -184,6 +184,6 @@ fn render(
     let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
     let shader = shaders::SolidShader(white);
     for object in objects {
-        renderer.draw(object.mesh, &object.transform(), &shader);
+        renderer.draw(object.mesh, &object.transform(), &shaders::ScreenUVShader);
     }
 }
