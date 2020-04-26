@@ -12,10 +12,11 @@ mod render_target;
 mod renderer;
 mod shaders;
 
+use display_device::DisplayDevice;
 use math::*;
 
 fn main() {
-    let dd /*: display_device::ConsoleDisplay*/ = display_device::ConsoleDisplay { rgb: true };
+    let dd = display_device::ConsoleDisplay { rgb: true };
 
     static STOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
     ctrlc::set_handler(|| {
@@ -110,10 +111,21 @@ fn main() {
     };
 
     dd.setup();
+    let mut dimensions: (usize, usize) = (10, 10);
+    let mut rt = render_target::RenderTarget::new(dimensions);
+
     while !STOP.load(std::sync::atomic::Ordering::Relaxed) {
-        dd.prepare();
-        render(&dd, &objects, &camera);
+        let new_dimensions = dd.dimensions().unwrap_or((20, 10));
+        if new_dimensions != dimensions {
+            dimensions = new_dimensions;
+            rt = render_target::RenderTarget::new(dimensions);
+        }
+
         objects[0].rotation.y = t;
+
+        dd.prepare();
+        render(&mut rt, &objects, &camera);
+        dd.show(&rt);
 
         std::thread::sleep(std::time::Duration::from_millis(
             (time_step * 1000.0) as u64,
@@ -125,28 +137,22 @@ fn main() {
 }
 
 fn render(
-    dd: &dyn display_device::DisplayDevice,
+    rt: &mut render_target::RenderTarget,
     objects: &Vec<object::Object>,
     camera: &camera::Camera,
 ) {
-    let mut rt = render_target::RenderTarget::new(dd.dimensions().unwrap_or((10, 10)));
+    let mut renderer = renderer::Renderer::new(
+        std::f32::consts::PI / 4.0,
+        rt.aspect_ratio(),
+        0.1,
+        100.0,
+        rt,
+        &camera,
+    );
 
-    {
-        let mut renderer = renderer::Renderer::new(
-            std::f32::consts::PI / 4.0,
-            rt.aspect_ratio(),
-            0.1,
-            100.0,
-            &mut rt,
-            &camera,
-        );
-
-        let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
-        let shader = shaders::SolidShader(white);
-        for object in objects {
-            renderer.draw(object.mesh, &object.transform(), &shader);
-        }
+    let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
+    let shader = shaders::SolidShader(white);
+    for object in objects {
+        renderer.draw(object.mesh, &object.transform(), &shader);
     }
-
-    dd.show(&rt);
 }
