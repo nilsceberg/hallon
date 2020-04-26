@@ -15,9 +15,22 @@ fn set_terminal_rgb((r, g, b): (u8, u8, u8)) {
     print!("\x1b[48;2;{};{};{}m", r, g, b);
 }
 
+impl ConsoleDisplay {
+    pub fn setup(&self) {
+        print!("\x1b[?25l");
+    }
+
+    pub fn prepare(&self) {
+        print!("\x1b[0;0H");
+    }
+
+    pub fn restore(&self) {
+        print!("\x1b[?25h");
+    }
+}
+
 impl DisplayDevice for ConsoleDisplay {
     fn show(&self, rt: &super::render_target::RenderTarget) {
-        print!("\x1b[0;0H");
         let threshold = Vec4::new(0.5, 0.5, 0.5, 1.0).length();
 
         let mut rgb: (u8, u8, u8) = (0, 0, 0);

@@ -10,3 +10,5 @@ edition = "2018"
 rand = "0.7.3"    # Random number generators and other randomness functionality.
 term_size = "0.3.1"
 failure = "0.1.7"
+ctrlc = "3.1.4"
+

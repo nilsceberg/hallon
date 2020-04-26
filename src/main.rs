@@ -1,3 +1,4 @@
+extern crate ctrlc;
 extern crate failure;
 
 mod camera;
@@ -14,7 +15,13 @@ mod shaders;
 use math::*;
 
 fn main() {
-    let dd = display_device::ConsoleDisplay { rgb: true };
+    let dd /*: display_device::ConsoleDisplay*/ = display_device::ConsoleDisplay { rgb: true };
+
+    static STOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    ctrlc::set_handler(|| {
+        STOP.store(true, std::sync::atomic::Ordering::Relaxed);
+    })
+    .unwrap();
 
     let cube_mesh = geometry::Mesh {
         triangles: vec![
@@ -93,24 +100,20 @@ fn main() {
     let sphere_path = std::path::Path::new("models/sphere.obj");
     let sphere_mesh = loaders::obj::load(&sphere_path).unwrap();
 
-    //objects.push(object::Object::new(&cube_mesh));
-    objects.push(object::Object::new(&sphere_mesh));
+    objects.push(object::Object::new(&cube_mesh));
+    //objects.push(object::Object::new(&sphere_mesh));
 
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;
     let mut camera = camera::Camera {
-        translation: Vec3::new(0.0, 0.0, -2.0),
+        translation: Vec3::new(0.0, 0.0, -3.0),
     };
 
-    loop {
+    dd.setup();
+    while !STOP.load(std::sync::atomic::Ordering::Relaxed) {
+        dd.prepare();
         render(&dd, &objects, &camera);
         objects[0].rotation.y = t;
-        objects[0].rotation.z = t;
-        objects[0].rotation.z = t;
-
-        //objects[0].scale.y = 1.5 + (t * 4.0 + 3.1415 * 0.5).sin() * 0.5;
-        //objects[0].scale.x = 1.0 - (t * 4.0 + 3.1415 * 0.5).sin() * 0.2;
-        //objects[0].scale.z = 1.0 - (t * 4.0 + 3.1415 * 0.5).sin() * 0.2;
 
         std::thread::sleep(std::time::Duration::from_millis(
             (time_step * 1000.0) as u64,
@@ -118,6 +121,7 @@ fn main() {
 
         t += time_step;
     }
+    dd.restore();
 }
 
 fn render(
