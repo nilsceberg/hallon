@@ -128,6 +128,34 @@ fn main() {
 
         render(&mut rt, &objects, &camera);
 
+        rasterizer::line(
+            &mut rt,
+            &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
+            &Vec2::new(-1.0, -1.0),
+            &Vec2::new(-1.0, 1.0),
+        );
+
+        rasterizer::line(
+            &mut rt,
+            &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
+            &Vec2::new(1.0, -1.0),
+            &Vec2::new(1.0, 1.0),
+        );
+
+        rasterizer::line(
+            &mut rt,
+            &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
+            &Vec2::new(-1.0, 1.0),
+            &Vec2::new(1.0, 1.0),
+        );
+
+        rasterizer::line(
+            &mut rt,
+            &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
+            &Vec2::new(-1.0, -1.0),
+            &Vec2::new(1.0, -1.0),
+        );
+
         dd.show(&rt);
 
         std::thread::sleep(std::time::Duration::from_millis(

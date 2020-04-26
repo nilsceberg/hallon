@@ -8,13 +8,13 @@ pub fn map((a0, b0): (f32, f32), (a1, b1): (f32, f32), x: f32) -> f32 {
 
 pub fn approximate_pixel(size: usize, normalized: f32) -> i32 {
     let size = size as f32;
-    let center_offset = 1.0 / size;
+    let center_offset = 1.0 / (2.0 * size);
     let floating = map(
-        (-1.0, 1.0),
-        (center_offset, size - center_offset),
+        (-1.0 + center_offset, 1.0 - center_offset),
+        (0.0, size - 1.0),
         normalized,
     );
-    (floating - 0.5).round() as i32
+    floating.round() as i32
 }
 
 pub fn from_normalized((width, height): (usize, usize), point: &Vec2) -> (i32, i32) {
