@@ -142,6 +142,19 @@ impl Vec4 {
             w: w,
         }
     }
+
+    pub fn from_vec3(xyz: Vec3, w: f32) -> Vec4 {
+        Vec4 {
+            x: xyz.x,
+            y: xyz.y,
+            z: xyz.z,
+            w: w,
+        }
+    }
+
+    pub fn xyz(&self) -> Vec3 {
+        Vec3::new(self.x, self.y, self.z)
+    }
 }
 
 impl VecN for Vec3 {

@@ -62,9 +62,9 @@ impl Renderer<'_> {
                 .projection_matrix
                 .mat_mul(&self.camera.view_matrix().mat_mul(transform));
 
-            let a = to_screen_space(&matrix, a);
-            let b = to_screen_space(&matrix, b);
-            let c = to_screen_space(&matrix, c);
+            let a = to_screen_space(&matrix, &a.position);
+            let b = to_screen_space(&matrix, &b.position);
+            let c = to_screen_space(&matrix, &c.position);
 
             let a = Vec2::new(a.x, a.y);
             let b = Vec2::new(b.x, b.y);
