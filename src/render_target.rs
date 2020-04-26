@@ -30,7 +30,12 @@ impl RenderTarget {
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: &Vec4) {
-        self.pixels[y * self.width + x] = *color;
+        self.pixels[y * self.width + x] = Vec4::new(
+            clamp((0.0, 1.0), color.x),
+            clamp((0.0, 1.0), color.y),
+            clamp((0.0, 1.0), color.z),
+            clamp((0.0, 1.0), color.w),
+        );
     }
 
     pub fn get_pixel(&self, x: usize, y: usize) -> Vec4 {
