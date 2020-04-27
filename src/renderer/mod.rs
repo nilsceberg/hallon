@@ -7,6 +7,7 @@ use super::shaders::*;
 
 pub struct Renderer<'a> {
     pub target: &'a mut RenderTarget,
+    pub depth: &'a mut RenderTarget,
     projection_matrix: Mat4x4,
     camera: &'a Camera,
 }
@@ -47,10 +48,12 @@ impl Renderer<'_> {
         near: f32,
         far: f32,
         target: &'a mut RenderTarget,
+        depth: &'a mut RenderTarget,
         camera: &'a Camera,
     ) -> Renderer<'a> {
         Renderer {
             target: target,
+            depth: depth,
             camera: camera,
             projection_matrix: projection_matrix(fov, aspect, near, far),
         }
@@ -75,7 +78,7 @@ impl Renderer<'_> {
             let mut c = *c;
             c.position = pc;
 
-            rasterizer::triangle(self.target, fragment, &a, &b, &c, false);
+            rasterizer::triangle(self.target, self.depth, fragment, &a, &b, &c, false);
         }
     }
 }

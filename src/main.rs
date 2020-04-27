@@ -69,20 +69,25 @@ fn main() {
     dd.setup();
     let mut dimensions: (usize, usize) = (10, 10);
     let mut rt = render_target::RenderTarget::new(dimensions);
+    let mut depth = render_target::RenderTarget::new(dimensions);
 
     while !STOP.load(std::sync::atomic::Ordering::Relaxed) {
         let new_dimensions = dd.dimensions().unwrap_or((20, 10));
         if new_dimensions != dimensions {
             dimensions = new_dimensions;
             rt = render_target::RenderTarget::new(dimensions);
+            depth = render_target::RenderTarget::new(dimensions);
         }
 
-        //objects[0].rotation.y = t;
+        objects[0].rotation.x = t;
+        objects[0].rotation.y = t;
+        objects[0].rotation.z = t;
 
         dd.prepare();
         rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
+        depth.clear(&Vec4::new(1.0, 1.0, 1.0, 1.0));
 
-        render(&mut rt, &objects, &camera);
+        render(&mut rt, &mut depth, &objects, &camera);
 
         rasterizer::line_2d(
             &mut rt,
@@ -125,6 +130,7 @@ fn main() {
 
 fn render(
     rt: &mut render_target::RenderTarget,
+    depth: &mut render_target::RenderTarget,
     objects: &Vec<object::Object>,
     camera: &camera::Camera,
 ) {
@@ -132,8 +138,9 @@ fn render(
         std::f32::consts::PI / 4.0,
         rt.aspect_ratio(),
         0.1,
-        100.0,
+        10.0,
         rt,
+        depth,
         &camera,
     );
 

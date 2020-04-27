@@ -30,6 +30,7 @@ pub fn to_normalized((width, height): (usize, usize), (x, y): (i32, i32)) -> Vec
 
 pub fn triangle(
     rt: &mut RenderTarget,
+    depth: &mut RenderTarget,
     shader: &dyn FragmentShader,
     a: &Vertex,
     b: &Vertex,
@@ -41,7 +42,7 @@ pub fn triangle(
         line(rt, shader, b, c);
         line(rt, shader, c, a);
     } else {
-        triangle_parallel(rt, shader, a, b, c);
+        triangle_parallel(rt, depth, shader, a, b, c);
     }
 }
 
@@ -52,6 +53,7 @@ pub fn triangle(
 
 fn triangle_parallel(
     rt: &mut RenderTarget,
+    depth: &mut RenderTarget,
     shader: &dyn FragmentShader,
     a: &Vertex,
     b: &Vertex,
@@ -74,6 +76,7 @@ fn triangle_parallel(
             {
                 pixel(
                     rt,
+                    Some(depth),
                     shader,
                     x,
                     y,
@@ -180,7 +183,7 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &
     let (x1, y1) = from_normalized(rt.dimensions(), &a.position.xy());
     let (x2, y2) = from_normalized(rt.dimensions(), &b.position.xy());
 
-    pixel(rt, shader, x1, y1, a);
+    pixel(rt, None, shader, x1, y1, a);
 
     if x1 == x2 && y1 == y2 {
         return;
@@ -195,7 +198,7 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &
         while x != dx {
             x += dx.signum();
             let y = ((x as f32) * slope).round() as i32;
-            pixel(rt, shader, x + x1, y + y1, a);
+            pixel(rt, None, shader, x + x1, y + y1, a);
         }
     } else {
         let slope = (dx as f32) / (dy as f32);
@@ -203,13 +206,14 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &
         while y != dy {
             y += dy.signum();
             let x = ((y as f32) * slope).round() as i32;
-            pixel(rt, shader, x + x1, y + y1, a);
+            pixel(rt, None, shader, x + x1, y + y1, a);
         }
     }
 }
 
 fn pixel(
     rt: &mut RenderTarget,
+    depth: Option<&mut RenderTarget>,
     shader: &dyn FragmentShader,
     x: i32,
     y: i32,
@@ -221,10 +225,30 @@ fn pixel(
             screen_uv: to_normalized(rt.dimensions(), (x, y)),
         };
 
-        let color = shader.fragment_color(&input);
-        rt.set_pixel(x as usize, y as usize, &color);
+        let draw = depth
+            .map(|t| {
+                let new_depth = interpolated_vertex.position.z;
+                let old_depth = t.get_pixel(x as usize, y as usize).x;
 
-        true
+                if new_depth < old_depth {
+                    t.set_pixel(
+                        x as usize,
+                        y as usize,
+                        &Vec4::new(new_depth, new_depth, new_depth, 1.0),
+                    );
+                    true
+                } else {
+                    false
+                }
+            })
+            .unwrap_or(true);
+
+        if draw {
+            let color = shader.fragment_color(&input);
+            rt.set_pixel(x as usize, y as usize, &color);
+        }
+
+        draw
     } else {
         false
     }
