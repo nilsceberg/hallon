@@ -96,6 +96,21 @@ fn triangle_parallel(
 }
 
 fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) -> bool {
+    /*
+     * Theory:
+     * The cross product returns a vector that is perpendicular to the two operands.
+     * There are two possible perpendicular vectors to two vectors in 3D space,
+     * and the result depends on the order of the operands. Thus, if we compute
+     * the Z value of two 2D-vectors with a Z value of zero, it will either be positive
+     * (pointing into the screen) or negative (pointing out) depending on which side of
+     * line AB the point C is when computing AB x AC.
+     *
+     * Depending on whether we want to draw the front or the back of faces,
+     * we can either require a points to be on the right side of all sides of the triangle,
+     * or all on the left side, since "front-facing" is defined by triangles being wound
+     * clock-wise.
+     */
+
     // Calculate AB and AP
     let abx = bx - ax;
     let aby = by - ay;
