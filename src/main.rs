@@ -24,74 +24,28 @@ fn main() {
     })
     .unwrap();
 
-    let cube_mesh = geometry::Mesh::from_faces(vec![
-        // Front
-        [
-            Vec3::new(-1.0, -1.0, -1.0),
-            Vec3::new(-1.0, 1.0, -1.0),
-            Vec3::new(1.0, 1.0, -1.0),
-        ],
-        [
-            Vec3::new(-1.0, -1.0, -1.0),
-            Vec3::new(1.0, 1.0, -1.0),
-            Vec3::new(1.0, -1.0, -1.0),
-        ],
-        // Right
-        [
-            Vec3::new(1.0, -1.0, -1.0),
-            Vec3::new(1.0, 1.0, -1.0),
-            Vec3::new(1.0, 1.0, 1.0),
-        ],
-        [
-            Vec3::new(1.0, -1.0, -1.0),
-            Vec3::new(1.0, 1.0, 1.0),
-            Vec3::new(1.0, -1.0, 1.0),
-        ],
-        // Top
-        [
-            Vec3::new(-1.0, 1.0, -1.0),
-            Vec3::new(-1.0, 1.0, 1.0),
-            Vec3::new(1.0, 1.0, 1.0),
-        ],
-        [
-            Vec3::new(-1.0, 1.0, -1.0),
-            Vec3::new(1.0, 1.0, 1.0),
-            Vec3::new(1.0, 1.0, -1.0),
-        ],
-        // Back
-        [
-            Vec3::new(1.0, -1.0, 1.0),
-            Vec3::new(1.0, 1.0, 1.0),
-            Vec3::new(-1.0, 1.0, 1.0),
-        ],
-        [
-            Vec3::new(1.0, -1.0, 1.0),
-            Vec3::new(-1.0, 1.0, 1.0),
-            Vec3::new(-1.0, -1.0, 1.0),
-        ],
-        // Left
-        [
-            Vec3::new(-1.0, -1.0, 1.0),
-            Vec3::new(-1.0, 1.0, 1.0),
-            Vec3::new(-1.0, 1.0, -1.0),
-        ],
-        [
-            Vec3::new(-1.0, -1.0, 1.0),
-            Vec3::new(-1.0, 1.0, -1.0),
-            Vec3::new(-1.0, -1.0, -1.0),
-        ],
-        // Bottom
-        [
-            Vec3::new(1.0, -1.0, -1.0),
-            Vec3::new(1.0, -1.0, 1.0),
-            Vec3::new(-1.0, -1.0, 1.0),
-        ],
-        [
-            Vec3::new(1.0, -1.0, -1.0),
-            Vec3::new(-1.0, -1.0, 1.0),
-            Vec3::new(-1.0, -1.0, -1.0),
-        ],
-    ]);
+    let tri_mesh = geometry::Mesh {
+        triangles: vec![[
+            geometry::Vertex {
+                position: Vec3::new(-1.0, -1.0, 0.0),
+                color: Vec4::new(1.0, 0.0, 0.0, 1.0),
+                uv: Vec2::new(0.0, 0.0),
+                normal: Vec3::new(0.0, 0.0, -1.0),
+            },
+            geometry::Vertex {
+                position: Vec3::new(-1.0, 1.0, 0.0),
+                color: Vec4::new(0.0, 1.0, 0.0, 1.0),
+                uv: Vec2::new(0.0, 1.0),
+                normal: Vec3::new(0.0, 0.0, -1.0),
+            },
+            geometry::Vertex {
+                position: Vec3::new(1.0, 1.0, 0.0),
+                color: Vec4::new(0.0, 0.0, 1.0, 1.0),
+                uv: Vec2::new(1.0, 1.0),
+                normal: Vec3::new(0.0, 0.0, -1.0),
+            },
+        ]],
+    };
 
     let mut objects: Vec<object::Object> = vec![];
 
@@ -102,8 +56,9 @@ fn main() {
     let cube_path = std::path::Path::new("models/cube.obj");
     let cube_mesh = loaders::obj::load(&cube_path).unwrap();
 
-    objects.push(object::Object::new(&cube_mesh));
+    //objects.push(object::Object::new(&cube_mesh));
     //objects.push(object::Object::new(&sphere_mesh));
+    objects.push(object::Object::new(&tri_mesh));
 
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;

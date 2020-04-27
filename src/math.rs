@@ -81,8 +81,21 @@ impl Vec2 {
     pub fn mul(&self, f: f32) -> Vec2 {
         Vec2::new(self.x * f, self.y * f)
     }
+
     pub fn add(&self, other: &Vec2) -> Vec2 {
         Vec2::new(self.x + other.x, self.y + other.y)
+    }
+
+    pub fn sub(&self, other: &Vec2) -> Vec2 {
+        Vec2::new(self.x - other.x, self.y - other.y)
+    }
+
+    pub fn length(&self) -> f32 {
+        (self.x.powf(2.0) + self.y.powf(2.0)).sqrt()
+    }
+
+    pub fn length2(&self) -> f32 {
+        self.x.powf(2.0) + self.y.powf(2.0)
     }
 }
 

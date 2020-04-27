@@ -77,10 +77,7 @@ fn triangle_parallel(
                     shader,
                     x,
                     y,
-                    &barycentric_interpolation(
-                        [*a, *b, *c],
-                        to_normalized(rt.dimensions(), (x, y)),
-                    ),
+                    &nearest_interpolation([*a, *b, *c], to_normalized(rt.dimensions(), (x, y))),
                 );
             }
         }
@@ -136,6 +133,24 @@ pub fn barycentric_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex 
             .mul(wa)
             .add(&b.normal.mul(wb))
             .add(&c.normal.mul(wc)),
+    }
+}
+
+pub fn nearest_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex {
+    let pa = a.position.xy();
+    let pb = b.position.xy();
+    let pc = c.position.xy();
+
+    let da = pa.sub(&position).length2();
+    let db = pb.sub(&position).length2();
+    let dc = pc.sub(&position).length2();
+
+    if da <= db && da <= dc {
+        return a;
+    } else if db <= da && db <= dc {
+        return b;
+    } else {
+        return c;
     }
 }
 
