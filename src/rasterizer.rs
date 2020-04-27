@@ -77,7 +77,10 @@ fn triangle_parallel(
                     shader,
                     x,
                     y,
-                    &nearest_interpolation([*a, *b, *c], to_normalized(rt.dimensions(), (x, y))),
+                    &barycentric_interpolation(
+                        [*a, *b, *c],
+                        to_normalized(rt.dimensions(), (x, y)),
+                    ),
                 );
             }
         }
@@ -105,6 +108,7 @@ fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) 
 }
 
 pub fn barycentric_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex {
+    // https://en.wikipedia.org/wiki/Barycentric_coordinate_system
     let px = position;
     let pa = a.position;
     let pb = b.position;
@@ -112,13 +116,11 @@ pub fn barycentric_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex 
 
     let d = pb.x - pa.x;
 
-    let wc = (px.y - pa.y + (pa.y * px.x) / d - (pa.x * pa.y) / d - (pb.y * px.x) / d
-        + (pa.x * pb.y) / d)
-        / (-pa.y - (pa.x * pa.y) / d - pa.y / d + (pa.x * pb.y) / d + pb.y / d + pc.y);
-
-    let wb = (px.x - pa.x + pa.x * wc + wc) / d;
-
-    let wa = 1.0 - wc - wb;
+    let wa = ((pb.y - pc.y) * (px.x - pc.x) + (pc.x - pb.x) * (px.y - pc.y))
+        / ((pb.y - pc.y) * (pa.x - pc.x) + (pc.x - pb.x) * (pa.y - pc.y));
+    let wb = ((pc.y - pa.y) * (px.x - pc.x) + (pa.x - pc.x) * (px.y - pc.y))
+        / ((pb.y - pc.y) * (pa.x - pc.x) + (pc.x - pb.x) * (pa.y - pc.y));
+    let wc = 1.0 - wa - wb;
 
     Vertex {
         position: a
