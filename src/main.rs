@@ -81,7 +81,8 @@ fn main() {
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;
     let mut camera = camera::Camera {
-        translation: Vec3::new(0.0, 0.0, -1.5),
+        translation: Vec3::new(0.0, 0.75, 0.0),
+        rotation: Vec3::new(std::f32::consts::FRAC_PI_6, 0.0, 0.0),
     };
 
     dd.setup();
@@ -97,9 +98,9 @@ fn main() {
             depth = render_target::RenderTarget::new(dimensions);
         }
 
-        for object in &mut objects {
-            object.rotation.y = t;
-        }
+        camera.translation.x = t.cos() * 1.5;
+        camera.translation.z = t.sin() * 1.5 + 0.5;
+        camera.rotation.y = t + std::f32::consts::FRAC_PI_2;
 
         dd.prepare();
         rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
@@ -155,7 +156,7 @@ fn render(
     camera: &camera::Camera,
 ) {
     let mut renderer = renderer::Renderer::new(
-        std::f32::consts::PI / 4.0,
+        std::f32::consts::PI / 3.0,
         rt.aspect_ratio(),
         0.1,
         10.0,

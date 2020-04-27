@@ -37,7 +37,7 @@ fn to_screen_space(matrix: &Mat4x4, point: &Vec3) -> Vec3 {
         // that are exactly on the camera's Z coordinate!).
         // This should be handled in a better way, but for now, let's just return
         // a dummy coordinate (which should make it obvious visually).
-        Vec3::new(0.0, 0.0, 0.0)
+        Vec3::new(0.0, 0.0, point.z)
     }
 }
 

@@ -37,6 +37,10 @@ pub fn triangle(
     c: &Vertex,
     wireframe: bool,
 ) {
+    if a.position.z < 0.0 || b.position.z < 0.0 || c.position.z < 0.0 {
+        return;
+    }
+
     if wireframe {
         line(rt, Some(depth), shader, a, b);
         line(rt, Some(depth), shader, b, c);

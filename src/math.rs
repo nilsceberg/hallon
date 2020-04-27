@@ -168,6 +168,32 @@ impl Vec3 {
         y.mat_mul(&x).mat_mul(&z)
     }
 
+    pub fn camera_rotation(&self) -> Mat4x4 {
+        // X axis
+        let x = Mat4x4([
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, self.x.cos(), -self.x.sin(), 0.0],
+            [0.0, self.x.sin(), self.x.cos(), 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
+        // Y axis
+        let y = Mat4x4([
+            [self.y.cos(), 0.0, -self.y.sin(), 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [self.y.sin(), 0.0, self.y.cos(), 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
+        // Z axis
+        let z = Mat4x4([
+            [self.z.cos(), -self.z.sin(), 0.0, 0.0],
+            [self.z.sin(), self.z.cos(), 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
+        // Apply y first, then x, last z
+        z.mat_mul(&x).mat_mul(&y)
+    }
+
     pub fn dot(&self, other: &Vec3) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
