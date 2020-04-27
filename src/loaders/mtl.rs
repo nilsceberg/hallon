@@ -6,9 +6,7 @@ use std::io::BufRead;
 use ::failure::format_err;
 use ::failure::Error;
 
-pub fn load(path: &std::path::Path) -> Result<HashMap<String, Vec4>, Error> {
-    let mut colors = HashMap::new();
-
+pub fn load(path: &std::path::Path, colors: &mut HashMap<String, Vec4>) -> Result<(), Error> {
     static NO_COLOR: Vec4 = Vec4 {
         x: 0.5,
         y: 0.5,
@@ -48,7 +46,7 @@ pub fn load(path: &std::path::Path) -> Result<HashMap<String, Vec4>, Error> {
         }
     }
 
-    Ok(colors)
+    Ok(())
 }
 
 fn parse_vec4(args: &mut std::str::SplitWhitespace) -> Result<Vec4, Error> {

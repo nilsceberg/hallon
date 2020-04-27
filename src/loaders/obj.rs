@@ -8,7 +8,7 @@ use ::failure::Error;
 
 pub fn load(
     path: &std::path::Path,
-    material_colors: &HashMap<String, Vec4>,
+    material_colors: Option<&HashMap<String, Vec4>>,
 ) -> Result<Mesh, Error> {
     let mut positions: Vec<Vec3> = vec![];
     let mut uv: Vec<Vec2> = vec![];
@@ -25,7 +25,12 @@ pub fn load(
         z: 1.0,
         w: 1.0,
     };
-    let mut current_color = material_colors.get("default").unwrap_or(&NO_COLOR);
+
+    let mut model_colors = HashMap::new();
+    let mut current_color = *material_colors
+        .unwrap_or(&model_colors)
+        .get("default")
+        .unwrap_or(&NO_COLOR);
 
     for line in lines {
         let line = line?;
@@ -45,13 +50,24 @@ pub fn load(
                 &positions,
                 &normals,
                 &uv,
-                current_color,
+                &current_color,
             )?),
             Some("usemtl") => {
-                current_color = words
+                current_color = *words
                     .next()
-                    .and_then(|mtl| material_colors.get(mtl))
+                    .and_then(|mtl| material_colors.unwrap_or(&model_colors).get(mtl))
                     .unwrap_or(&NO_COLOR)
+            }
+            Some("mtllib") => {
+                super::mtl::load(
+                    &path.with_file_name(
+                        words
+                            .next()
+                            .ok_or(format_err!("no material lib file name"))?
+                            .to_owned(),
+                    ),
+                    &mut model_colors,
+                )?;
             }
             //Some(d) => eprintln!("Unrecognized directive: {}", d),
             _ => {

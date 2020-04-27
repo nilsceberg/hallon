@@ -50,18 +50,28 @@ fn main() {
 
     let mut objects: Vec<object::Object> = vec![];
 
-    let rabbit_materials = loaders::mtl::load(&std::path::Path::new("models/rabbit.mtl")).unwrap();
+    let rabbit_mesh = loaders::obj::load(&std::path::Path::new("models/rabbit.obj"), None).unwrap();
+    let tree_mesh = loaders::obj::load(&std::path::Path::new("models/tree.obj"), None).unwrap();
 
-    // Load sphere (but actually it's a rabbit)
-    let sphere_path = std::path::Path::new("models/rabbit.obj");
-    let sphere_mesh = loaders::obj::load(&sphere_path, &rabbit_materials).unwrap();
-
-    let cube_path = std::path::Path::new("models/cube.obj");
-    let cube_mesh = loaders::obj::load(&cube_path, &HashMap::new()).unwrap();
+    let cube_mesh = loaders::obj::load(
+        &std::path::Path::new("models/cube.obj"),
+        Some(&HashMap::new()),
+    )
+    .unwrap();
 
     //objects.push(object::Object::new(&cube_mesh));
-    objects.push(object::Object::new(&sphere_mesh));
-    //objects.push(object::Object::new(&tri_mesh));
+    let mut rabbit = object::Object::new(&rabbit_mesh);
+    let mut tree = object::Object::new(&tree_mesh);
+
+    rabbit.translation.x = 1.0;
+    rabbit.translation.y = -0.5;
+
+    tree.translation.x = -1.0;
+    tree.translation.y = -1.0;
+    tree.scale = tree.scale.mul(0.5);
+
+    objects.push(rabbit);
+    objects.push(tree);
 
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;
@@ -82,10 +92,9 @@ fn main() {
             depth = render_target::RenderTarget::new(dimensions);
         }
 
-        //objects[0].rotation.x = t;
-        objects[0].rotation.y = t;
-        objects[0].translation.y = -0.5;
-        //objects[0].rotation.z = t;
+        for object in &mut objects {
+            object.rotation.y = t;
+        }
 
         dd.prepare();
         rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
