@@ -24,7 +24,30 @@ impl FragmentShader for SolidShader {
 pub struct DebugShader;
 impl FragmentShader for DebugShader {
     fn fragment_color(&self, input: &FragmentInput) -> Vec4 {
-        Vec4::new(input.vertex.uv.x, input.vertex.uv.y, 0.0, 1.0)
+        Vec4::new(
+            map((-1.0, 1.0), (0.0, 1.0), input.vertex.normal.x),
+            map((-1.0, 1.0), (0.0, 1.0), input.vertex.normal.y),
+            map((-1.0, 1.0), (0.0, 1.0), input.vertex.normal.z),
+            1.0,
+        )
+    }
+}
+
+pub struct DiffuseShader(pub Vec3);
+impl FragmentShader for DiffuseShader {
+    fn fragment_color(&self, input: &FragmentInput) -> Vec4 {
+        let &DiffuseShader(light_direction) = self;
+        let light_direction = light_direction.mul(-1.0);
+
+        // This expects vertex normals in world-space.
+        Vec4::from_vec3(
+            input.vertex.color.xyz().mul(map(
+                (-1.0, 1.0),
+                (0.0, 1.0),
+                input.vertex.normal.dot(&light_direction),
+            )),
+            1.0,
+        )
     }
 }
 

@@ -56,14 +56,14 @@ fn main() {
     let cube_path = std::path::Path::new("models/cube.obj");
     let cube_mesh = loaders::obj::load(&cube_path).unwrap();
 
-    objects.push(object::Object::new(&cube_mesh));
-    //objects.push(object::Object::new(&sphere_mesh));
+    //objects.push(object::Object::new(&cube_mesh));
+    objects.push(object::Object::new(&sphere_mesh));
     //objects.push(object::Object::new(&tri_mesh));
 
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;
     let mut camera = camera::Camera {
-        translation: Vec3::new(0.0, 0.0, -3.0),
+        translation: Vec3::new(0.0, 0.0, -2.0),
     };
 
     dd.setup();
@@ -146,7 +146,8 @@ fn render(
 
     let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
     let shader = shaders::SolidShader(white);
+    let diffuse_shader = shaders::DiffuseShader(Vec3::new(-0.707, -0.707, 0.0));
     for object in objects {
-        renderer.draw(object.mesh, &object.transform(), &shaders::DebugShader);
+        renderer.draw(object.mesh, &object.transform(), &diffuse_shader);
     }
 }

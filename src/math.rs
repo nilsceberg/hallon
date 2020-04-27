@@ -104,6 +104,10 @@ impl Vec3 {
         Vec3 { x: x, y: y, z: z }
     }
 
+    pub fn to_vec4(&self) -> Vec4 {
+        Vec4::from_vec3(*self, 1.0)
+    }
+
     pub fn xy(&self) -> Vec2 {
         Vec2::new(self.x, self.y)
     }
@@ -162,6 +166,10 @@ impl Vec3 {
         ]);
         // Apply z first, then x, last y
         y.mat_mul(&x).mat_mul(&z)
+    }
+
+    pub fn dot(&self, other: &Vec3) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 }
 

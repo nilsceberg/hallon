@@ -78,6 +78,11 @@ impl Renderer<'_> {
             let mut c = *c;
             c.position = pc;
 
+            // Convert normals to world-space since the diffuse shader expects them to be.
+            a.normal = transform.mul(&a.normal.to_vec4()).xyz();
+            b.normal = transform.mul(&b.normal.to_vec4()).xyz();
+            c.normal = transform.mul(&c.normal.to_vec4()).xyz();
+
             rasterizer::triangle(self.target, self.depth, fragment, &a, &b, &c, false);
         }
     }

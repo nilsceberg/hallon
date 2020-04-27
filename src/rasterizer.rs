@@ -90,9 +90,9 @@ fn triangle_parallel(
     }
 
     //let black = super::shaders::SolidShader(Vec4::new(0.0, 0.0, 0.0, 1.0));
-    line(rt, Some(depth), shader, a, b);
-    line(rt, Some(depth), shader, b, c);
-    line(rt, Some(depth), shader, c, a);
+    //line(rt, Some(depth), shader, a, b);
+    //line(rt, Some(depth), shader, b, c);
+    //line(rt, Some(depth), shader, c, a);
 }
 
 fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) -> bool {
@@ -131,8 +131,6 @@ pub fn barycentric_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex 
     let pa = a.position;
     let pb = b.position;
     let pc = c.position;
-
-    let d = pb.x - pa.x;
 
     let wa = ((pb.y - pc.y) * (px.x - pc.x) + (pc.x - pb.x) * (px.y - pc.y))
         / ((pb.y - pc.y) * (pa.x - pc.x) + (pc.x - pb.x) * (pa.y - pc.y));
