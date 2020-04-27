@@ -38,9 +38,9 @@ pub fn triangle(
     wireframe: bool,
 ) {
     if wireframe {
-        line(rt, shader, a, b);
-        line(rt, shader, b, c);
-        line(rt, shader, c, a);
+        line(rt, Some(depth), shader, a, b);
+        line(rt, Some(depth), shader, b, c);
+        line(rt, Some(depth), shader, c, a);
     } else {
         triangle_parallel(rt, depth, shader, a, b, c);
     }
@@ -89,10 +89,10 @@ fn triangle_parallel(
         }
     }
 
-    let black = super::shaders::SolidShader(Vec4::new(0.0, 0.0, 0.0, 1.0));
-    line(rt, &black, a, b);
-    line(rt, &black, b, c);
-    line(rt, &black, c, a);
+    //let black = super::shaders::SolidShader(Vec4::new(0.0, 0.0, 0.0, 1.0));
+    line(rt, Some(depth), shader, a, b);
+    line(rt, Some(depth), shader, b, c);
+    line(rt, Some(depth), shader, c, a);
 }
 
 fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) -> bool {
@@ -159,9 +159,27 @@ pub fn nearest_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex {
     }
 }
 
+// I guess barycentric is also linear, but this one is for lines. :)
+pub fn linear_interpolation((a, b): (Vertex, Vertex), position: Vec2) -> Vertex {
+    let pa = a.position.xy();
+    let pb = b.position.xy();
+    let d = pa.sub(&pb).length();
+    let f = pa.sub(&position).length();
+    let wa = 1.0 - f / d;
+    let wb = f / d;
+
+    Vertex {
+        position: a.position.mul(wa).add(&b.position.mul(wb)),
+        color: a.color.mul(wa).add(&b.color.mul(wb)),
+        uv: a.uv.mul(wa).add(&b.uv.mul(wb)),
+        normal: a.normal.mul(wa).add(&b.normal.mul(wb)),
+    }
+}
+
 pub fn line_2d(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2) {
     line(
         rt,
+        None,
         shader,
         &Vertex {
             position: Vec3::new(a.x, a.y, 0.0),
@@ -178,12 +196,24 @@ pub fn line_2d(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: 
     );
 }
 
-pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &Vertex) {
+pub fn line(
+    rt: &mut RenderTarget,
+    depth: Option<&mut RenderTarget>,
+    shader: &dyn FragmentShader,
+    a: &Vertex,
+    b: &Vertex,
+) {
+    if depth.is_none() {
+        return;
+    }
+
+    let depth = depth.unwrap();
+
     /* Naive: */
     let (x1, y1) = from_normalized(rt.dimensions(), &a.position.xy());
     let (x2, y2) = from_normalized(rt.dimensions(), &b.position.xy());
 
-    pixel(rt, None, shader, x1, y1, a);
+    pixel(rt, Some(depth), shader, x1, y1, a);
 
     if x1 == x2 && y1 == y2 {
         return;
@@ -195,10 +225,18 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &
     if dx.abs() >= dy.abs() {
         let slope = (dy as f32) / (dx as f32);
         let mut x = 0;
+
         while x != dx {
             x += dx.signum();
             let y = ((x as f32) * slope).round() as i32;
-            pixel(rt, None, shader, x + x1, y + y1, a);
+            pixel(
+                rt,
+                Some(depth),
+                shader,
+                x + x1,
+                y + y1,
+                &linear_interpolation((*a, *b), to_normalized(rt.dimensions(), (x + x1, y + y1))),
+            );
         }
     } else {
         let slope = (dx as f32) / (dy as f32);
@@ -206,7 +244,14 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &
         while y != dy {
             y += dy.signum();
             let x = ((y as f32) * slope).round() as i32;
-            pixel(rt, None, shader, x + x1, y + y1, a);
+            pixel(
+                rt,
+                Some(depth),
+                shader,
+                x + x1,
+                y + y1,
+                &linear_interpolation((*a, *b), to_normalized(rt.dimensions(), (x + x1, y + y1))),
+            );
         }
     }
 }
