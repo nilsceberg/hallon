@@ -39,7 +39,7 @@ impl Mesh {
                     color: Vec4::new(1.0, 1.0, 1.0, 1.0),
                     normal: Vec3::new(0.0, 1.0, 0.0),
                 },
-            ])
+            ]);
         }
 
         Mesh { triangles }

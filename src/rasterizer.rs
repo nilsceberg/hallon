@@ -70,10 +70,12 @@ fn triangle_parallel(
 
     for x in left..(right + 1) {
         for y in top..(bottom + 1) {
-            if right_side((x0, y0), (x1, y1), (x, y))
-                && right_side((x1, y1), (x2, y2), (x, y))
-                && right_side((x2, y2), (x0, y0), (x, y))
-            {
+            if is_inside_triangle(
+                &a.position.xy(),
+                &b.position.xy(),
+                &c.position.xy(),
+                &to_normalized(rt.dimensions(), (x, y)),
+            ) {
                 pixel(
                     rt,
                     Some(depth),
@@ -95,7 +97,11 @@ fn triangle_parallel(
     //line(rt, Some(depth), shader, c, a);
 }
 
-fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) -> bool {
+fn is_inside_triangle(a: &Vec2, b: &Vec2, c: &Vec2, p: &Vec2) -> bool {
+    right_side(a, b, p) && right_side(b, c, p) && right_side(c, a, p)
+}
+
+fn right_side(a: &Vec2, b: &Vec2, p: &Vec2) -> bool {
     /*
      * Theory:
      * The cross product returns a vector that is perpendicular to the two operands.
@@ -112,17 +118,14 @@ fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) 
      */
 
     // Calculate AB and AP
-    let abx = bx - ax;
-    let aby = by - ay;
-
-    let apx = px - ax;
-    let apy = py - ay;
+    let ab = b.sub(a);
+    let ap = p.sub(a);
 
     // Calculate z of cross product
-    let z = abx * apy - aby * apx;
+    let z = ab.x * ap.y - ab.y * ap.x;
 
-    // Change to less-than for front-face culling
-    z > 0
+    // Change to greater-than for front-face culling
+    z < 0.0
 }
 
 pub fn barycentric_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex {

@@ -1,11 +1,15 @@
 use crate::geometry::*;
 use crate::math::*;
+use std::collections::HashMap;
 use std::io::BufRead;
 
 use ::failure::format_err;
 use ::failure::Error;
 
-pub fn load(path: &std::path::Path) -> Result<Mesh, Error> {
+pub fn load(
+    path: &std::path::Path,
+    material_colors: &HashMap<String, Vec4>,
+) -> Result<Mesh, Error> {
     let mut positions: Vec<Vec3> = vec![];
     let mut uv: Vec<Vec2> = vec![];
     let mut normals: Vec<Vec3> = vec![];
@@ -14,6 +18,14 @@ pub fn load(path: &std::path::Path) -> Result<Mesh, Error> {
 
     let file = std::fs::File::open(path)?;
     let lines = std::io::BufReader::new(file).lines();
+
+    static NO_COLOR: Vec4 = Vec4 {
+        x: 1.0,
+        y: 0.0,
+        z: 1.0,
+        w: 1.0,
+    };
+    let mut current_color = material_colors.get("default").unwrap_or(&NO_COLOR);
 
     for line in lines {
         let line = line?;
@@ -28,7 +40,19 @@ pub fn load(path: &std::path::Path) -> Result<Mesh, Error> {
             Some("v") => positions.push(parse_vec4(&mut words)?.xyz()),
             Some("vt") => uv.push(parse_vec4(&mut words)?.xyz().xy()),
             Some("vn") => normals.push(parse_vec4(&mut words)?.xyz()),
-            Some("f") => triangles.push(parse_triangle(&mut words, &positions, &normals, &uv)?),
+            Some("f") => triangles.push(parse_triangle(
+                &mut words,
+                &positions,
+                &normals,
+                &uv,
+                current_color,
+            )?),
+            Some("usemtl") => {
+                current_color = words
+                    .next()
+                    .and_then(|mtl| material_colors.get(mtl))
+                    .unwrap_or(&NO_COLOR)
+            }
             //Some(d) => eprintln!("Unrecognized directive: {}", d),
             _ => {
                 // Do nothing
@@ -61,11 +85,12 @@ fn parse_triangle(
     vertices: &Vec<Vec3>,
     normals: &Vec<Vec3>,
     uv: &Vec<Vec2>,
+    color: &Vec4,
 ) -> Result<Triangle, Error> {
     Ok([
-        parse_vertex(args, vertices, normals, uv)?,
-        parse_vertex(args, vertices, normals, uv)?,
-        parse_vertex(args, vertices, normals, uv)?,
+        parse_vertex(args, vertices, normals, uv, color)?,
+        parse_vertex(args, vertices, normals, uv, color)?,
+        parse_vertex(args, vertices, normals, uv, color)?,
     ])
 }
 
@@ -74,6 +99,7 @@ fn parse_vertex(
     positions: &Vec<Vec3>,
     normals: &Vec<Vec3>,
     uvs: &Vec<Vec2>,
+    color: &Vec4,
 ) -> Result<Vertex, Error> {
     static DEFAULT_UV: Vec2 = Vec2 { x: 0.0, y: 0.0 };
     static DEFAULT_NORMAL: Vec3 = Vec3 {
@@ -113,7 +139,7 @@ fn parse_vertex(
     Ok(Vertex {
         position: *position,
         uv: *uv,
-        color: Vec4::new(1.0, 1.0, 1.0, 1.0),
+        color: *color,
         normal: *normal,
     })
 }

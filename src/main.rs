@@ -14,6 +14,7 @@ mod shaders;
 
 use display_device::DisplayDevice;
 use math::*;
+use std::collections::HashMap;
 
 fn main() {
     let dd = display_device::ConsoleDisplay { rgb: true };
@@ -49,12 +50,14 @@ fn main() {
 
     let mut objects: Vec<object::Object> = vec![];
 
-    // Load sphere
-    let sphere_path = std::path::Path::new("models/sphere.obj");
-    let sphere_mesh = loaders::obj::load(&sphere_path).unwrap();
+    let rabbit_materials = loaders::mtl::load(&std::path::Path::new("models/rabbit.mtl")).unwrap();
+
+    // Load sphere (but actually it's a rabbit)
+    let sphere_path = std::path::Path::new("models/rabbit.obj");
+    let sphere_mesh = loaders::obj::load(&sphere_path, &rabbit_materials).unwrap();
 
     let cube_path = std::path::Path::new("models/cube.obj");
-    let cube_mesh = loaders::obj::load(&cube_path).unwrap();
+    let cube_mesh = loaders::obj::load(&cube_path, &HashMap::new()).unwrap();
 
     //objects.push(object::Object::new(&cube_mesh));
     objects.push(object::Object::new(&sphere_mesh));
@@ -63,7 +66,7 @@ fn main() {
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;
     let mut camera = camera::Camera {
-        translation: Vec3::new(0.0, 0.0, -2.0),
+        translation: Vec3::new(0.0, 0.0, -1.5),
     };
 
     dd.setup();
@@ -79,9 +82,10 @@ fn main() {
             depth = render_target::RenderTarget::new(dimensions);
         }
 
-        objects[0].rotation.x = t;
+        //objects[0].rotation.x = t;
         objects[0].rotation.y = t;
-        objects[0].rotation.z = t;
+        objects[0].translation.y = -0.5;
+        //objects[0].rotation.z = t;
 
         dd.prepare();
         rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
@@ -89,6 +93,8 @@ fn main() {
 
         render(&mut rt, &mut depth, &objects, &camera);
 
+        // Currently broken because line doesn't work without a depth map
+        // because I can't figure out how to make it work with the borrow checker.
         rasterizer::line_2d(
             &mut rt,
             &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
