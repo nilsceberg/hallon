@@ -163,6 +163,11 @@ fn render(
     let shader = shaders::SolidShader(white);
     let diffuse_shader = shaders::DiffuseShader(Vec3::new(-0.707, -0.707, 0.0));
     for object in objects {
-        renderer.draw(object.mesh, &object.transform(), &diffuse_shader);
+        renderer.draw(
+            object.mesh,
+            &object.transform(),
+            &object.normal_transform(),
+            &diffuse_shader,
+        );
     }
 }

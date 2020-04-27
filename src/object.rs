@@ -26,4 +26,9 @@ impl<'a> Object<'a> {
             .mat_mul(&self.rotation.rotation())
             .mat_mul(&self.scale.scaling())
     }
+
+    pub fn normal_transform(&self) -> Mat4x4 {
+        // We scale first, then rotate, and finally translate
+        self.rotation.rotation()
+    }
 }

@@ -59,7 +59,13 @@ impl Renderer<'_> {
         }
     }
 
-    pub fn draw<'b>(&'b mut self, mesh: &Mesh, transform: &Mat4x4, fragment: &dyn FragmentShader) {
+    pub fn draw<'b>(
+        &'b mut self,
+        mesh: &Mesh,
+        transform: &Mat4x4,
+        normal_transform: &Mat4x4,
+        fragment: &dyn FragmentShader,
+    ) {
         for [a, b, c] in &mesh.triangles {
             let matrix = self
                 .projection_matrix
@@ -79,9 +85,9 @@ impl Renderer<'_> {
             c.position = pc;
 
             // Convert normals to world-space since the diffuse shader expects them to be.
-            a.normal = transform.mul(&a.normal.to_vec4()).xyz();
-            b.normal = transform.mul(&b.normal.to_vec4()).xyz();
-            c.normal = transform.mul(&c.normal.to_vec4()).xyz();
+            a.normal = normal_transform.mul(&a.normal.to_vec4()).xyz();
+            b.normal = normal_transform.mul(&b.normal.to_vec4()).xyz();
+            c.normal = normal_transform.mul(&c.normal.to_vec4()).xyz();
 
             rasterizer::triangle(self.target, self.depth, fragment, &a, &b, &c, false);
         }
