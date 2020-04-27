@@ -64,13 +64,18 @@ fn main() {
     let mut tree = object::Object::new(&tree_mesh);
 
     rabbit.translation.x = 1.0;
-    rabbit.translation.y = -0.5;
+    rabbit.translation.y = -1.0;
 
     tree.translation.x = -1.0;
     tree.translation.y = -1.0;
     tree.scale = tree.scale.mul(0.5);
 
     objects.push(rabbit);
+    objects.push(tree);
+
+    tree.translation.x = 0.5;
+    tree.translation.z = 1.5;
+    tree.rotation.y = 0.823;
     objects.push(tree);
 
     let time_step = 1.0 / 30.0;

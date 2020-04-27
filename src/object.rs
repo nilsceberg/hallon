@@ -1,6 +1,7 @@
 use super::geometry::*;
 use super::math::*;
 
+#[derive(Copy, Clone)]
 pub struct Object<'a> {
     pub mesh: &'a Mesh,
 
