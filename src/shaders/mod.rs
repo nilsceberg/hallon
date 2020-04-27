@@ -24,7 +24,7 @@ impl FragmentShader for SolidShader {
 pub struct DebugShader;
 impl FragmentShader for DebugShader {
     fn fragment_color(&self, input: &FragmentInput) -> Vec4 {
-        input.vertex.color
+        Vec4::new(input.vertex.uv.x, input.vertex.uv.y, 0.0, 1.0)
     }
 }
 

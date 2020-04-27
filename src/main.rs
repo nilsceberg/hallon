@@ -56,9 +56,9 @@ fn main() {
     let cube_path = std::path::Path::new("models/cube.obj");
     let cube_mesh = loaders::obj::load(&cube_path).unwrap();
 
-    //objects.push(object::Object::new(&cube_mesh));
+    objects.push(object::Object::new(&cube_mesh));
     //objects.push(object::Object::new(&sphere_mesh));
-    objects.push(object::Object::new(&tri_mesh));
+    //objects.push(object::Object::new(&tri_mesh));
 
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;

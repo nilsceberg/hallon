@@ -7,6 +7,9 @@ use ::failure::Error;
 
 pub fn load(path: &std::path::Path) -> Result<Mesh, Error> {
     let mut positions: Vec<Vec3> = vec![];
+    let mut uv: Vec<Vec2> = vec![];
+    let mut normals: Vec<Vec3> = vec![];
+
     let mut triangles: Vec<Triangle> = vec![];
 
     let file = std::fs::File::open(path)?;
@@ -23,7 +26,9 @@ pub fn load(path: &std::path::Path) -> Result<Mesh, Error> {
         let mut words = line.split_whitespace();
         match words.next() {
             Some("v") => positions.push(parse_vec4(&mut words)?.xyz()),
-            Some("f") => triangles.push(parse_triangle(&mut words, &positions)?),
+            Some("vt") => uv.push(parse_vec4(&mut words)?.xyz().xy()),
+            Some("vn") => normals.push(parse_vec4(&mut words)?.xyz()),
+            Some("f") => triangles.push(parse_triangle(&mut words, &positions, &normals, &uv)?),
             //Some(d) => eprintln!("Unrecognized directive: {}", d),
             _ => {
                 // Do nothing
@@ -43,12 +48,9 @@ fn parse_vec4(args: &mut std::str::SplitWhitespace) -> Result<Vec4, Error> {
         .next()
         .ok_or(format_err!("no Y coordinate"))?
         .parse::<f32>()?;
-    let z = args
-        .next()
-        .ok_or(format_err!("no Z coordinate"))?
-        .parse::<f32>()?;
 
-    // W is always ignored
+    let z = args.next().unwrap_or("0.0").parse::<f32>()?;
+
     let w = args.next().unwrap_or("1.0").parse::<f32>()?;
 
     Ok(Vec4::new(x, y, z, w))
@@ -57,18 +59,29 @@ fn parse_vec4(args: &mut std::str::SplitWhitespace) -> Result<Vec4, Error> {
 fn parse_triangle(
     args: &mut std::str::SplitWhitespace,
     vertices: &Vec<Vec3>,
+    normals: &Vec<Vec3>,
+    uv: &Vec<Vec2>,
 ) -> Result<Triangle, Error> {
     Ok([
-        parse_vertex(args, vertices)?,
-        parse_vertex(args, vertices)?,
-        parse_vertex(args, vertices)?,
+        parse_vertex(args, vertices, normals, uv)?,
+        parse_vertex(args, vertices, normals, uv)?,
+        parse_vertex(args, vertices, normals, uv)?,
     ])
 }
 
 fn parse_vertex(
     args: &mut std::str::SplitWhitespace,
     positions: &Vec<Vec3>,
+    normals: &Vec<Vec3>,
+    uvs: &Vec<Vec2>,
 ) -> Result<Vertex, Error> {
+    static DEFAULT_UV: Vec2 = Vec2 { x: 0.0, y: 0.0 };
+    static DEFAULT_NORMAL: Vec3 = Vec3 {
+        x: 0.0,
+        y: 0.0,
+        z: -1.0,
+    };
+
     let mut args = args
         .next()
         .ok_or(format_err!("no vertex triple"))?
@@ -78,6 +91,19 @@ fn parse_vertex(
         .next()
         .ok_or(format_err!("no vertex index"))?
         .parse::<usize>()?;
+
+    let uv = args
+        .next()
+        .and_then(|x| x.parse::<usize>().ok())
+        .and_then(|i| uvs.get(i - 1))
+        .unwrap_or(&DEFAULT_UV);
+
+    let normal = args
+        .next()
+        .and_then(|x| x.parse::<usize>().ok())
+        .and_then(|i| normals.get(i - 1))
+        .unwrap_or(&DEFAULT_NORMAL);
+
     let position = positions
         .get(v - 1)
         .ok_or(format_err!("vertex index {} out of bounds", v))?;
@@ -86,8 +112,8 @@ fn parse_vertex(
 
     Ok(Vertex {
         position: *position,
-        uv: Vec2::new(0.0, 0.0),
+        uv: *uv,
         color: Vec4::new(1.0, 1.0, 1.0, 1.0),
-        normal: Vec3::new(0.0, 1.0, 0.0),
+        normal: *normal,
     })
 }
