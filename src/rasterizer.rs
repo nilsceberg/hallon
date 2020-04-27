@@ -1,3 +1,4 @@
+use super::geometry::*;
 use super::math::*;
 use super::render_target::RenderTarget;
 use super::shaders::*;
@@ -30,9 +31,9 @@ pub fn to_normalized((width, height): (usize, usize), (x, y): (i32, i32)) -> Vec
 pub fn triangle(
     rt: &mut RenderTarget,
     shader: &dyn FragmentShader,
-    a: &Vec2,
-    b: &Vec2,
-    c: &Vec2,
+    a: &Vertex,
+    b: &Vertex,
+    c: &Vertex,
     wireframe: bool,
 ) {
     if wireframe {
@@ -52,13 +53,13 @@ pub fn triangle(
 fn triangle_parallel(
     rt: &mut RenderTarget,
     shader: &dyn FragmentShader,
-    a: &Vec2,
-    b: &Vec2,
-    c: &Vec2,
+    a: &Vertex,
+    b: &Vertex,
+    c: &Vertex,
 ) {
-    let (x0, y0) = from_normalized(rt.dimensions(), a);
-    let (x1, y1) = from_normalized(rt.dimensions(), b);
-    let (x2, y2) = from_normalized(rt.dimensions(), c);
+    let (x0, y0) = from_normalized(rt.dimensions(), &a.position.xy());
+    let (x1, y1) = from_normalized(rt.dimensions(), &b.position.xy());
+    let (x2, y2) = from_normalized(rt.dimensions(), &c.position.xy());
 
     let left = x0.min(x1).min(x2);
     let right = x0.max(x1).max(x2);
@@ -71,7 +72,16 @@ fn triangle_parallel(
                 && right_side((x1, y1), (x2, y2), (x, y))
                 && right_side((x2, y2), (x0, y0), (x, y))
             {
-                pixel(rt, shader, x, y);
+                pixel(
+                    rt,
+                    shader,
+                    x,
+                    y,
+                    &barycentric_interpolation(
+                        [*a, *b, *c],
+                        to_normalized(rt.dimensions(), (x, y)),
+                    ),
+                );
             }
         }
     }
@@ -97,12 +107,63 @@ fn right_side((ax, ay): (i32, i32), (bx, by): (i32, i32), (px, py): (i32, i32)) 
     z > 0
 }
 
-pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2) {
-    /* Naive: */
-    let (x1, y1) = from_normalized(rt.dimensions(), a);
-    let (x2, y2) = from_normalized(rt.dimensions(), b);
+pub fn barycentric_interpolation([a, b, c]: Triangle, position: Vec2) -> Vertex {
+    let px = position;
+    let pa = a.position;
+    let pb = b.position;
+    let pc = c.position;
 
-    pixel(rt, shader, x1, y1);
+    let d = pb.x - pa.x;
+
+    let wc = (px.y - pa.y + (pa.y * px.x) / d - (pa.x * pa.y) / d - (pb.y * px.x) / d
+        + (pa.x * pb.y) / d)
+        / (-pa.y - (pa.x * pa.y) / d - pa.y / d + (pa.x * pb.y) / d + pb.y / d + pc.y);
+
+    let wb = (px.x - pa.x + pa.x * wc + wc) / d;
+
+    let wa = 1.0 - wc - wb;
+
+    Vertex {
+        position: a
+            .position
+            .mul(wa)
+            .add(&b.position.mul(wb))
+            .add(&c.position.mul(wc)),
+        color: a.color.mul(wa).add(&b.color.mul(wb)).add(&c.color.mul(wc)),
+        uv: a.uv.mul(wa).add(&b.uv.mul(wb)).add(&c.uv.mul(wc)),
+        normal: a
+            .normal
+            .mul(wa)
+            .add(&b.normal.mul(wb))
+            .add(&c.normal.mul(wc)),
+    }
+}
+
+pub fn line_2d(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Vec2) {
+    line(
+        rt,
+        shader,
+        &Vertex {
+            position: Vec3::new(a.x, a.y, 0.0),
+            color: Vec4::new(1.0, 1.0, 1.0, 1.0),
+            uv: *a,
+            normal: Vec3::new(0.0, 0.0, -1.0),
+        },
+        &Vertex {
+            position: Vec3::new(b.x, b.y, 0.0),
+            color: Vec4::new(1.0, 1.0, 1.0, 1.0),
+            uv: *a,
+            normal: Vec3::new(0.0, 0.0, -1.0),
+        },
+    );
+}
+
+pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vertex, b: &Vertex) {
+    /* Naive: */
+    let (x1, y1) = from_normalized(rt.dimensions(), &a.position.xy());
+    let (x2, y2) = from_normalized(rt.dimensions(), &b.position.xy());
+
+    pixel(rt, shader, x1, y1, a);
 
     if x1 == x2 && y1 == y2 {
         return;
@@ -117,7 +178,7 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Ve
         while x != dx {
             x += dx.signum();
             let y = ((x as f32) * slope).round() as i32;
-            pixel(rt, shader, x + x1, y + y1);
+            pixel(rt, shader, x + x1, y + y1, a);
         }
     } else {
         let slope = (dx as f32) / (dy as f32);
@@ -125,20 +186,21 @@ pub fn line(rt: &mut RenderTarget, shader: &dyn FragmentShader, a: &Vec2, b: &Ve
         while y != dy {
             y += dy.signum();
             let x = ((y as f32) * slope).round() as i32;
-            pixel(rt, shader, x + x1, y + y1);
+            pixel(rt, shader, x + x1, y + y1, a);
         }
     }
 }
 
-fn pixel(rt: &mut RenderTarget, shader: &dyn FragmentShader, x: i32, y: i32) -> bool {
+fn pixel(
+    rt: &mut RenderTarget,
+    shader: &dyn FragmentShader,
+    x: i32,
+    y: i32,
+    interpolated_vertex: &Vertex,
+) -> bool {
     if x >= 0 && x < (rt.width as i32) && y >= 0 && y < (rt.height as i32) {
         let input = FragmentInput {
-            position: &Vec4::new(
-                (x as f32) * (rt.width as f32),
-                (y as f32) * (rt.height as f32),
-                0.0,
-                1.0,
-            ),
+            vertex: *interpolated_vertex,
             screen_uv: to_normalized(rt.dimensions(), (x, y)),
         };
 

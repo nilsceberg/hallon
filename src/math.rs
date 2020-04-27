@@ -77,6 +77,13 @@ impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
         Vec2 { x: x, y: y }
     }
+
+    pub fn mul(&self, f: f32) -> Vec2 {
+        Vec2::new(self.x * f, self.y * f)
+    }
+    pub fn add(&self, other: &Vec2) -> Vec2 {
+        Vec2::new(self.x + other.x, self.y + other.y)
+    }
 }
 
 impl Vec3 {
@@ -84,8 +91,20 @@ impl Vec3 {
         Vec3 { x: x, y: y, z: z }
     }
 
+    pub fn xy(&self) -> Vec2 {
+        Vec2::new(self.x, self.y)
+    }
+
     pub fn mul(&self, f: f32) -> Vec3 {
         Vec3::new(self.x * f, self.y * f, self.z * f)
+    }
+
+    pub fn add(&self, other: &Vec3) -> Vec3 {
+        Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
+    }
+
+    pub fn sub(&self, other: &Vec3) -> Vec3 {
+        Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 
     pub fn translation(&self) -> Mat4x4 {
@@ -150,6 +169,19 @@ impl Vec4 {
             z: xyz.z,
             w: w,
         }
+    }
+
+    pub fn mul(&self, f: f32) -> Vec4 {
+        Vec4::new(self.x * f, self.y * f, self.z * f, self.w * f)
+    }
+
+    pub fn add(&self, other: &Vec4) -> Vec4 {
+        Vec4::new(
+            self.x + other.x,
+            self.y + other.y,
+            self.z + other.z,
+            self.w + other.w,
+        )
     }
 
     pub fn xyz(&self) -> Vec3 {

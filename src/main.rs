@@ -122,35 +122,35 @@ fn main() {
             rt = render_target::RenderTarget::new(dimensions);
         }
 
-        objects[0].rotation.y = t;
+        //objects[0].rotation.y = t;
 
         dd.prepare();
         rt.clear(&Vec4::new(0.3, 0.3, 0.3, 1.0));
 
         render(&mut rt, &objects, &camera);
 
-        rasterizer::line(
+        rasterizer::line_2d(
             &mut rt,
             &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
             &Vec2::new(-1.0, -1.0),
             &Vec2::new(-1.0, 1.0),
         );
 
-        rasterizer::line(
+        rasterizer::line_2d(
             &mut rt,
             &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
             &Vec2::new(1.0, -1.0),
             &Vec2::new(1.0, 1.0),
         );
 
-        rasterizer::line(
+        rasterizer::line_2d(
             &mut rt,
             &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
             &Vec2::new(-1.0, 1.0),
             &Vec2::new(1.0, 1.0),
         );
 
-        rasterizer::line(
+        rasterizer::line_2d(
             &mut rt,
             &shaders::SolidShader(Vec4::new(1.0, 0.0, 0.0, 1.0)),
             &Vec2::new(-1.0, -1.0),
@@ -185,6 +185,6 @@ fn render(
     let white = Vec4::new(1.0, 1.0, 1.0, 1.0);
     let shader = shaders::SolidShader(white);
     for object in objects {
-        renderer.draw(object.mesh, &object.transform(), &shaders::ScreenUVShader);
+        renderer.draw(object.mesh, &object.transform(), &shaders::DebugShader);
     }
 }

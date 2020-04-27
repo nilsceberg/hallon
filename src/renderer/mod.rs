@@ -62,13 +62,18 @@ impl Renderer<'_> {
                 .projection_matrix
                 .mat_mul(&self.camera.view_matrix().mat_mul(transform));
 
-            let a = to_screen_space(&matrix, &a.position);
-            let b = to_screen_space(&matrix, &b.position);
-            let c = to_screen_space(&matrix, &c.position);
+            let pa = to_screen_space(&matrix, &a.position);
+            let pb = to_screen_space(&matrix, &b.position);
+            let pc = to_screen_space(&matrix, &c.position);
 
-            let a = Vec2::new(a.x, a.y);
-            let b = Vec2::new(b.x, b.y);
-            let c = Vec2::new(c.x, c.y);
+            let mut a = *a;
+            a.position = pa;
+
+            let mut b = *b;
+            b.position = pb;
+
+            let mut c = *c;
+            c.position = pc;
 
             rasterizer::triangle(self.target, fragment, &a, &b, &c, false);
         }

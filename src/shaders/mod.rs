@@ -1,10 +1,11 @@
 extern crate rand;
 
+use super::geometry::*;
 use super::math::*;
 use rand::prelude::*;
 
-pub struct FragmentInput<'a> {
-    pub position: &'a Vec4,
+pub struct FragmentInput {
+    pub vertex: Vertex,
     pub screen_uv: Vec2,
 }
 
@@ -17,6 +18,13 @@ impl FragmentShader for SolidShader {
     fn fragment_color(&self, _input: &FragmentInput) -> Vec4 {
         let &SolidShader(color) = self;
         color
+    }
+}
+
+pub struct DebugShader;
+impl FragmentShader for DebugShader {
+    fn fragment_color(&self, input: &FragmentInput) -> Vec4 {
+        Vec4::new(input.vertex.position.x, input.vertex.position.y, 0.0, 1.0)
     }
 }
 
