@@ -25,27 +25,50 @@ fn main() {
     })
     .unwrap();
 
-    let tri_mesh = geometry::Mesh {
-        triangles: vec![[
-            geometry::Vertex {
-                position: Vec3::new(-1.0, -1.0, 0.0),
-                color: Vec4::new(1.0, 0.0, 0.0, 1.0),
-                uv: Vec2::new(0.0, 0.0),
-                normal: Vec3::new(0.0, 0.0, -1.0),
-            },
-            geometry::Vertex {
-                position: Vec3::new(-1.0, 1.0, 0.0),
-                color: Vec4::new(0.0, 1.0, 0.0, 1.0),
-                uv: Vec2::new(0.0, 1.0),
-                normal: Vec3::new(0.0, 0.0, -1.0),
-            },
-            geometry::Vertex {
-                position: Vec3::new(1.0, 1.0, 0.0),
-                color: Vec4::new(0.0, 0.0, 1.0, 1.0),
-                uv: Vec2::new(1.0, 1.0),
-                normal: Vec3::new(0.0, 0.0, -1.0),
-            },
-        ]],
+    let ground_color = Vec4::new(0.9, 0.8, 0.5, 1.0);
+    let quad_mesh = geometry::Mesh {
+        triangles: vec![
+            [
+                geometry::Vertex {
+                    position: Vec3::new(-1.0, -1.0, 0.0),
+                    color: ground_color,
+                    uv: Vec2::new(0.0, 0.0),
+                    normal: Vec3::new(0.0, 0.0, -1.0),
+                },
+                geometry::Vertex {
+                    position: Vec3::new(-1.0, 1.0, 0.0),
+                    color: ground_color,
+                    uv: Vec2::new(0.0, 1.0),
+                    normal: Vec3::new(0.0, 0.0, -1.0),
+                },
+                geometry::Vertex {
+                    position: Vec3::new(1.0, 1.0, 0.0),
+                    color: ground_color,
+                    uv: Vec2::new(1.0, 1.0),
+                    normal: Vec3::new(0.0, 0.0, -1.0),
+                },
+            ],
+            [
+                geometry::Vertex {
+                    position: Vec3::new(-1.0, -1.0, 0.0),
+                    color: ground_color,
+                    uv: Vec2::new(0.0, 0.0),
+                    normal: Vec3::new(0.0, 0.0, -1.0),
+                },
+                geometry::Vertex {
+                    position: Vec3::new(1.0, 1.0, 0.0),
+                    color: ground_color,
+                    uv: Vec2::new(1.0, 1.0),
+                    normal: Vec3::new(0.0, 0.0, -1.0),
+                },
+                geometry::Vertex {
+                    position: Vec3::new(1.0, -1.0, 0.0),
+                    color: ground_color,
+                    uv: Vec2::new(0.0, 1.0),
+                    normal: Vec3::new(0.0, 0.0, -1.0),
+                },
+            ],
+        ],
     };
 
     let mut objects: Vec<object::Object> = vec![];
@@ -65,11 +88,19 @@ fn main() {
 
     rabbit.translation.x = 1.0;
     rabbit.translation.y = -1.0;
+    rabbit.rotation.y = 0.2;
 
     tree.translation.x = -1.0;
     tree.translation.y = -1.0;
     tree.scale = tree.scale.mul(0.5);
 
+    let mut ground = object::Object::new(&quad_mesh);
+    ground.rotation.x = std::f32::consts::FRAC_PI_2;
+    ground.translation.y = -1.0;
+    ground.translation.z = 0.5;
+    ground.scale.x = 1.5;
+    ground.scale.y = 1.5;
+    objects.push(ground);
     objects.push(rabbit);
     objects.push(tree);
 
@@ -81,7 +112,7 @@ fn main() {
     let time_step = 1.0 / 30.0;
     let mut t: f32 = 0.0;
     let mut camera = camera::Camera {
-        translation: Vec3::new(0.0, 0.75, 0.0),
+        translation: Vec3::new(0.0, 1.25, 0.0),
         rotation: Vec3::new(std::f32::consts::FRAC_PI_6, 0.0, 0.0),
     };
 
@@ -98,8 +129,8 @@ fn main() {
             depth = render_target::RenderTarget::new(dimensions);
         }
 
-        camera.translation.x = t.cos() * 1.5;
-        camera.translation.z = t.sin() * 1.5 + 0.5;
+        camera.translation.x = t.cos() * 3.0;
+        camera.translation.z = t.sin() * 3.0 + 0.5;
         camera.rotation.y = t + std::f32::consts::FRAC_PI_2;
 
         dd.prepare();
@@ -156,7 +187,7 @@ fn render(
     camera: &camera::Camera,
 ) {
     let mut renderer = renderer::Renderer::new(
-        std::f32::consts::PI / 3.0,
+        std::f32::consts::PI / 6.0,
         rt.aspect_ratio(),
         0.1,
         10.0,
